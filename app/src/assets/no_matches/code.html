@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Terra - Matches</title>
+<!-- Google Fonts: Literata (Headline) & Nunito Sans (Body/Label) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&amp;family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e0d8",
+                        "on-surface-variant": "#4a4e4a",
+                        "on-secondary-container": "#5e5548",
+                        "inverse-primary": "#8ecf9e",
+                        "on-tertiary-fixed": "#221a05",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "outline-variant": "#c4c8bc",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0ece4",
+                        "primary": "#4a7c59",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "on-primary-container": "#d8f0de",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "error-container": "#ffdad8",
+                        "tertiary-fixed": "#f8e0a8",
+                        "secondary": "#6b6358",
+                        "primary-fixed": "#c8e8d0",
+                        "surface-bright": "#faf6f0",
+                        "primary-container": "#78a886",
+                        "surface-dim": "#dbd7cf",
+                        "inverse-surface": "#2e3230",
+                        "on-primary-fixed": "#002110",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "surface-container-high": "#eae6de",
+                        "on-error-container": "#690005",
+                        "surface-container-low": "#f5f1ea",
+                        "on-surface": "#2e3230",
+                        "on-background": "#2e3230",
+                        "tertiary": "#705c30",
+                        "secondary-container": "#f0e8db",
+                        "error": "#b83230",
+                        "surface": "#faf6f0",
+                        "tertiary-container": "#c4a66a",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-fixed": "#1e1a13",
+                        "background": "#faf6f0",
+                        "secondary-fixed": "#f0e8db",
+                        "outline": "#74796e",
+                        "on-tertiary-container": "#554020",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e4e0d8",
+                        "inverse-on-surface": "#f5f0e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Literata", "serif"],
+                        "display": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    },
+                    "fontSize": {}
+                },
+            },
+        }
+    </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background font-body antialiased flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center w-full px-6 h-16 bg-surface shadow-sm z-40 relative">
+<!-- Leading Avatar -->
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container shrink-0 flex items-center justify-center">
+<img alt="Student profile photo" class="w-full h-full object-cover" data-alt="A warm, brightly lit portrait of a smiling university student outdoors. The lighting is soft and natural, creating a welcoming and approachable mood. The image fits the organic, earthy Terra brand aesthetic with natural cream and green undertones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5RCgyFNXhFBcdyMLUiGncEQjDGjzy4nATLNqcGraHYFAkPZIYWQFDS62VOKk7DlKNXn2GtyeEwWjhf9s0Z3BnqyxbJLagSXKANKktSdGi4OHj3H1Eu41BCfifsAU21L_2UjuVkTwoubV1LYAuLmeq9AroExUM1x6-TwsSy8PPHS-f6gZAxpU2V7fj1j_wtCBpPguV5zCYyaDT8VuNewCIUErJstRVHWNasbXvGvk0EzEzDfG0I9pfD4_lLEw0W-82UUr5gRg4ch8"/>
+</div>
+<!-- Headline / Brand -->
+<h1 class="font-headline font-bold text-2xl text-primary tracking-tight">Terra</h1>
+<!-- Trailing Icon -->
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-primary">
+<span class="material-symbols-outlined text-[24px]">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas - Empty State -->
+<main class="flex-1 flex flex-col items-center justify-center px-6 pb-24 overflow-y-auto">
+<div class="flex flex-col items-center text-center max-w-md mx-auto">
+<!-- Graphic / Icon Container -->
+<div class="w-32 h-32 rounded-full bg-surface-container flex items-center justify-center mb-8 shadow-[0_4px_20px_rgba(46,50,48,0.04)]">
+<span class="material-symbols-outlined text-6xl text-primary opacity-80" style="font-variation-settings: 'FILL' 1;">person_search</span>
+</div>
+<!-- Text Content -->
+<h2 class="font-headline text-3xl font-semibold text-on-surface mb-4">No matches yet</h2>
+<p class="font-body text-lg text-on-surface-variant mb-10 leading-relaxed max-w-xs mx-auto">
+                Keep exploring and connecting with students from your department and beyond.
+            </p>
+<!-- CTA Button -->
+<button class="bg-primary text-on-primary font-body text-base font-semibold py-4 px-10 rounded-xl shadow-sm hover:bg-surface-tint/90 transition-transform active:scale-95">
+                Start Discovering
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 h-20 pb-safe bg-surface rounded-t-3xl shadow-[0_-4px_20px_rgba(46,50,48,0.06)] md:hidden">
+<!-- Active Item: Matches -->
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-fixed rounded-2xl px-5 py-2 transition-all duration-300 ease-in-out">
+<span class="material-symbols-outlined mb-1 text-[24px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label text-[11px] font-semibold uppercase tracking-wider">Matches</span>
+</button>
+<!-- Inactive Item: Events -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 ease-in-out px-4 py-1">
+<span class="material-symbols-outlined mb-1 text-[24px]">calendar_month</span>
+<span class="font-label text-[11px] font-semibold uppercase tracking-wider">Events</span>
+</button>
+<!-- Inactive Item: Chat -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 ease-in-out px-4 py-1">
+<span class="material-symbols-outlined mb-1 text-[24px]">forum</span>
+<span class="font-label text-[11px] font-semibold uppercase tracking-wider">Chat</span>
+</button>
+<!-- Inactive Item: Profile -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary transition-all duration-300 ease-in-out px-4 py-1">
+<span class="material-symbols-outlined mb-1 text-[24px]">person</span>
+<span class="font-label text-[11px] font-semibold uppercase tracking-wider">Profile</span>
+</button>
+</nav>
+<!-- Web Navigation Cluster (Hidden on mobile, visible on md+) - Implementing the Responsive Pivot -->
+<div class="hidden md:flex fixed top-0 left-0 w-full h-16 pointer-events-none z-50 px-6 justify-center items-center">
+<nav class="pointer-events-auto flex items-center space-x-8 bg-surface/80 backdrop-blur-md px-8 py-2 rounded-full shadow-sm mt-2 border border-outline-variant/20">
+<button class="text-primary font-body font-semibold flex items-center space-x-2">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>Matches</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors font-body font-medium flex items-center space-x-2">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+<span>Events</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors font-body font-medium flex items-center space-x-2">
+<span class="material-symbols-outlined text-[20px]">forum</span>
+<span>Chat</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors font-body font-medium flex items-center space-x-2">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span>Profile</span>
+</button>
+</nav>
+</div>
+</body></html>

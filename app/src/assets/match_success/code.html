@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>It's a Match! - DBU Connect</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400..700&amp;family=Nunito+Sans:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e0d8",
+                        "on-surface-variant": "#4a4e4a",
+                        "on-secondary-container": "#5e5548",
+                        "inverse-primary": "#8ecf9e",
+                        "on-tertiary-fixed": "#221a05",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "outline-variant": "#c4c8bc",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0ece4",
+                        "primary": "#4a7c59",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "on-primary-container": "#d8f0de",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "error-container": "#ffdad8",
+                        "tertiary-fixed": "#f8e0a8",
+                        "secondary": "#6b6358",
+                        "primary-fixed": "#c8e8d0",
+                        "surface-bright": "#faf6f0",
+                        "primary-container": "#78a886",
+                        "surface-dim": "#dbd7cf",
+                        "inverse-surface": "#2e3230",
+                        "on-primary-fixed": "#002110",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "surface-container-high": "#eae6de",
+                        "on-error-container": "#690005",
+                        "surface-container-low": "#f5f1ea",
+                        "on-surface": "#2e3230",
+                        "on-background": "#2e3230",
+                        "tertiary": "#705c30",
+                        "secondary-container": "#f0e8db",
+                        "error": "#b83230",
+                        "surface": "#faf6f0",
+                        "tertiary-container": "#c4a66a",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-fixed": "#1e1a13",
+                        "background": "#faf6f0",
+                        "secondary-fixed": "#f0e8db",
+                        "outline": "#74796e",
+                        "on-tertiary-container": "#554020",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e4e0d8",
+                        "inverse-on-surface": "#f5f0e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Literata"
+                        ],
+                        "display": [
+                            "Literata"
+                        ],
+                        "body": [
+                            "Nunito Sans"
+                        ],
+                        "label": [
+                            "Nunito Sans"
+                        ]
+                    },
+                    "fontSize": {}
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Nunito Sans', sans-serif;
+            background-color: #ffffff; /* Requested #FFFFFF background */
+            color: #2e3230; /* on-background */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Literata', serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="h-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
+<!-- Decorative Organic Background Elements -->
+<div class="absolute top-[-10%] left-[-10%] w-[50vmin] h-[50vmin] bg-tertiary-fixed opacity-30 rounded-full blur-3xl z-0 pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60vmin] h-[60vmin] bg-primary-fixed opacity-20 rounded-full blur-3xl z-0 pointer-events-none"></div>
+<main class="w-full max-w-md mx-auto flex flex-col items-center text-center z-10 relative">
+<!-- Overlapping Profile Photos -->
+<div class="flex items-center justify-center mb-10 relative">
+<!-- User Profile Photo -->
+<div class="w-32 h-32 rounded-full border-4 border-white shadow-[0_4px_20px_rgba(46,50,48,0.06)] overflow-hidden relative z-10 transform translate-x-4">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A portrait photograph of a young male university student smiling softly, captured in warm, natural daylight. The image should feel authentic and grounded, with earthy tones and a soft focus background, embodying an approachable, organic aesthetic suitable for a modern networking application profile photo." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqDhtW78mRgCWCiDKqmvl4YzN6Xibr_yLT7BYb_Se28UU-lqdrX8b-p2FhPffiXwOz7lbil8b2sDSkg2Dcv42EyOuc6So1SklZsU4-yY8FpimWXGT8TdGlxRxb6OtKTH0CYwkrUWWC4CVfWE61q76uNbqqw3XOPpDX0dFj3qd8ZCAXlrL3BwsYY7TGeoNBOOYraMDPmVQ0t6dmhznrJ343vYSdtuVVcqfrRYkiUeKfXv3KIqbyldafoVC6yaqpM3ciIv_9gtlGA2s"/>
+</div>
+<!-- Match Profile Photo -->
+<div class="w-32 h-32 rounded-full border-4 border-white shadow-[0_4px_20px_rgba(46,50,48,0.06)] overflow-hidden relative z-20 transform -translate-x-4">
+<img alt="Sarah Profile" class="w-full h-full object-cover" data-alt="A portrait photograph of a young female university student smiling warmly, captured in soft, natural daylight. The image should feel inviting and human, featuring earthy tones and a gently blurred background, representing a friendly and approachable profile picture for a modern networking platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfvoHcgXdTfYwWelHqmqHdQcrf8GQw3M_WT3nwQlxTztYwF0bEbISgXCJIVeMdzSoiQL1gbMAQRqM7EPxV1FutaFAs3fEwdUxnnXnv-5BUeoITm1U3Btor0sqO5UhooPc7AcYAtpW3tMAO02ui1vqcU2dkZfZTmnxlSOM_qxlokg-HhMm0Nl9ebgxtv13RZpLlEU5pOsaBA4i77ZHEFticac-vh1cEhV_r0R2Fsb8Ik9zwUlTg1kHxBQ-r-X8V833EG0GTxjLIDX4"/>
+</div>
+<!-- Heart Badge Indicator -->
+<div class="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 bg-tertiary text-on-tertiary w-10 h-10 rounded-full flex items-center justify-center z-30 shadow-[0_4px_20px_rgba(46,50,48,0.1)] border-2 border-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-size: 20px;">favorite</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="space-y-4 mb-12 px-4">
+<h1 class="font-headline text-4xl font-bold text-on-surface tracking-tight">It's a Match!</h1>
+<p class="font-body text-on-surface-variant text-lg leading-relaxed max-w-[280px] mx-auto">
+                You and Sarah liked each other. Why not start a conversation?
+            </p>
+</div>
+<!-- Actions -->
+<div class="w-full space-y-4 px-6">
+<button class="w-full bg-primary text-on-primary font-label text-base font-semibold py-4 rounded-xl shadow-[0_4px_20px_rgba(46,50,48,0.06)] hover:bg-surface-tint transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">forum</span>
+                Send a Message
+            </button>
+<button class="w-full bg-surface-bright text-primary font-label text-base font-semibold py-4 rounded-xl border border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                Keep Browsing
+            </button>
+</div>
+</main>
+</body></html>

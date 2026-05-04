@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DBU Connect - Verify ID</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;600;700&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e0d8",
+                        "on-surface-variant": "#4a4e4a",
+                        "on-secondary-container": "#5e5548",
+                        "inverse-primary": "#8ecf9e",
+                        "on-tertiary-fixed": "#221a05",
+                        "on-secondary-fixed-variant": "#4a4538",
+                        "on-primary-fixed-variant": "#2a6038",
+                        "outline-variant": "#c4c8bc",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0ece4",
+                        "primary": "#4a7c59",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed-dim": "#d4ccbf",
+                        "on-primary-container": "#d8f0de",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#554020",
+                        "error-container": "#ffdad8",
+                        "tertiary-fixed": "#f8e0a8",
+                        "secondary": "#6b6358",
+                        "primary-fixed": "#c8e8d0",
+                        "surface-bright": "#faf6f0",
+                        "primary-container": "#78a886",
+                        "surface-dim": "#dbd7cf",
+                        "inverse-surface": "#2e3230",
+                        "on-primary-fixed": "#002110",
+                        "primary-fixed-dim": "#8ecf9e",
+                        "tertiary-fixed-dim": "#dcc48e",
+                        "surface-container-high": "#eae6de",
+                        "on-error-container": "#690005",
+                        "surface-container-low": "#f5f1ea",
+                        "on-surface": "#2e3230",
+                        "on-background": "#2e3230",
+                        "tertiary": "#705c30",
+                        "secondary-container": "#f0e8db",
+                        "error": "#b83230",
+                        "surface": "#faf6f0",
+                        "tertiary-container": "#c4a66a",
+                        "surface-tint": "#4a7c59",
+                        "on-secondary-fixed": "#1e1a13",
+                        "background": "#faf6f0",
+                        "secondary-fixed": "#f0e8db",
+                        "outline": "#74796e",
+                        "on-tertiary-container": "#554020",
+                        "on-secondary": "#ffffff",
+                        "surface-container-highest": "#e4e0d8",
+                        "inverse-on-surface": "#f5f0e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Literata", "serif"],
+                        "display": ["Literata", "serif"],
+                        "body": ["Nunito Sans", "sans-serif"],
+                        "label": ["Nunito Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-variant min-h-screen flex items-center justify-center font-body text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- Mobile-sized container for app-like feel -->
+<main class="w-full max-w-md bg-background min-h-screen sm:min-h-[850px] sm:h-[795px] sm:rounded-[2.5rem] sm:shadow-[0_8px_40px_rgba(46,50,48,0.12)] overflow-hidden flex flex-col relative border-8 border-surface-container-high sm:border-surface">
+<!-- Minimal Transactional Header (Nav Suppressed) -->
+<header class="flex items-center justify-between px-6 pt-12 pb-4">
+<button aria-label="Go back" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-container-high transition-colors text-on-surface">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">arrow_back</span>
+</button>
+<div class="flex gap-1.5">
+<div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<div class="w-2 h-2 rounded-full bg-surface-container-highest"></div>
+</div>
+</header>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col px-8 pb-10 pt-4 overflow-y-auto">
+<!-- Context Graphic -->
+<div class="w-full h-40 mb-8 rounded-xl overflow-hidden bg-surface-container flex items-center justify-center relative">
+<div class="absolute inset-0 bg-cover bg-center opacity-80 mix-blend-multiply" data-alt="A warm, highly stylized macro shot of softly layered, textured art paper in earthy forest greens and warm cream tones. The composition is abstract but evokes a sense of security and organic structure. Soft, diffuse, high-key lighting creates gentle shadows across the soft curves of the paper, embodying the brand's 'rooted warmth' aesthetic. No text or harsh edges, just a calming, natural atmosphere suitable for a modern digital layout." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBt4abQ8V7Kcx-lo4fINYsUgMuOQjLSMzj2JKfraASzUV4e4pLLWbM8dSVJR4sGP6qGXz3HJkZpFiCI3VlQeeTOwRBM7L45z-krnC7e6XyR1ctF9_pcSby3tyOZJXr4oiucKPeYQ7gU57SjUTDf3VByXoJ3pNI3VFYARIka2xR44PYzOgy9aA6Gzx9jyx9cgtyP5ZaQUvFSTW-_d_Ys0XT53FmRdG7XFGuisSQgutlRsJvPfHWW-IfIafRGRXF8pqoUoUrA5hhCubo');">
+</div>
+<div class="w-16 h-16 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center relative z-10 shadow-sm border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">badge</span>
+</div>
+</div>
+<!-- Typography -->
+<div class="mb-10 text-center">
+<h1 class="font-headline text-3xl font-bold text-on-surface mb-4 tracking-tight leading-tight">
+                    Verify your Student Status
+                </h1>
+<p class="text-on-surface-variant text-base leading-relaxed max-w-[280px] mx-auto">
+                    To keep our community safe, please upload a clear photo of your DBU Student ID.
+                </p>
+</div>
+<!-- Upload Interactive Zone -->
+<button class="group relative w-full rounded-xl border-2 border-dashed border-outline/40 bg-surface hover:bg-surface-container-low hover:border-primary/50 transition-all duration-300 p-8 flex flex-col items-center justify-center gap-4 outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+<div class="w-14 h-14 rounded-full bg-primary-container/30 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300 ease-out">
+<span class="material-symbols-outlined text-2xl">add_photo_alternate</span>
+</div>
+<div class="text-center">
+<p class="font-bold text-on-surface mb-1">Tap to select photo</p>
+<p class="text-sm text-on-surface-variant">JPEG, PNG or HEIC. Max 5MB.</p>
+</div>
+<!-- Decorative corner accents to make the box feel less harsh -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-outline-variant rounded-tl-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-outline-variant rounded-tr-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-outline-variant rounded-bl-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-outline-variant rounded-br-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+</button>
+<!-- Security Trust Indicator -->
+<div class="mt-6 flex items-center justify-center gap-2 text-on-surface-variant/70 text-sm">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<p>Your data is securely encrypted</p>
+</div>
+<!-- Action Area -->
+<div class="mt-auto pt-8">
+<button class="w-full bg-primary text-on-primary font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-[0_4px_14px_rgba(74,124,89,0.25)] hover:shadow-[0_6px_20px_rgba(74,124,89,0.3)]">
+                    Upload ID
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'wght' 600;">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
