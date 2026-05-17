@@ -34,6 +34,7 @@ fun LoginScreen(
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isLoggedIn) {
         if (state.isLoggedIn) onLoginSuccess()
@@ -65,7 +66,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(
-            text = "Enter your phone number",
+            text = "Welcome back!",
             fontSize = 28.sp,
             fontWeight = FontWeight.SemiBold,
             color = TextPrimary,
@@ -76,7 +77,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "We'll send you a verification code to secure your account.",
+            text = "Sign in with your university email to continue.",
             fontSize = 16.sp,
             color = TextSecondary,
             textAlign = TextAlign.Center,
@@ -86,61 +87,9 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Phone number label
+        // University Email
         Text(
-            text = "Phone number",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextPrimary
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Phone input row
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Country code
-            OutlinedTextField(
-                value = "+251",
-                onValueChange = {},
-                readOnly = true,
-                modifier = Modifier.width(90.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    unfocusedBorderColor = BorderDefault,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                ),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // Phone number
-            OutlinedTextField(
-                value = state.phone,
-                onValueChange = { viewModel.updatePhone(it) },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("911 234 567", color = TextTertiary) },
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = PrimaryGreen,
-                    unfocusedBorderColor = BorderDefault,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                singleLine = true
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // OTP
-        Text(
-            text = "OTP Verification Code",
+            text = "University Email",
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             color = TextPrimary
@@ -148,10 +97,13 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = state.otp,
-            onValueChange = { viewModel.updateOtp(it) },
+            value = state.email,
+            onValueChange = { viewModel.updateEmail(it) },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Enter code", color = TextTertiary) },
+            placeholder = { Text("name@dbu.edu.et", color = TextTertiary) },
+            leadingIcon = {
+                Icon(Icons.Outlined.Email, contentDescription = null, tint = TextSecondary)
+            },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
@@ -159,7 +111,48 @@ fun LoginScreen(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White
             ),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Password
+        Text(
+            text = "Password",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = TextPrimary
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = state.password,
+            onValueChange = { viewModel.updatePassword(it) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("••••••••", color = TextTertiary) },
+            leadingIcon = {
+                Icon(Icons.Outlined.Lock, contentDescription = null, tint = TextSecondary)
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        if (passwordVisible) Icons.Outlined.Visibility
+                        else Icons.Outlined.VisibilityOff,
+                        contentDescription = null,
+                        tint = TextSecondary
+                    )
+                }
+            },
+            visualTransformation = if (passwordVisible) VisualTransformation.None
+            else PasswordVisualTransformation(),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = PrimaryGreen,
+                unfocusedBorderColor = BorderDefault,
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            ),
             singleLine = true
         )
 
@@ -176,7 +169,7 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         PrimaryButton(
-            text = "Continue",
+            text = "Sign In",
             onClick = { viewModel.login() },
             isLoading = state.isLoading
         )
@@ -319,9 +312,9 @@ fun SignUpScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Email
+                    // University Email
                     FormField(
-                        label = "DBU Student Email",
+                        label = "University Email",
                         value = state.email,
                         onValueChange = { viewModel.updateEmail(it) },
                         placeholder = "name@dbu.edu.et",
@@ -329,11 +322,18 @@ fun SignUpScreen(
                         keyboardType = KeyboardType.Email
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Use your @dbu.edu.et email address",
+                        fontSize = 12.sp,
+                        color = TextTertiary
+                    )
 
-                    // Phone
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Phone (optional)
                     FormField(
-                        label = "Phone Number",
+                        label = "Phone Number (Optional)",
                         value = state.phone,
                         onValueChange = { viewModel.updatePhone(it) },
                         placeholder = "+251 911 234 567",

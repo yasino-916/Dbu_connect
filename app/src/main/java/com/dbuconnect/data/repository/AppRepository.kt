@@ -6,6 +6,9 @@ import com.dbuconnect.data.db.*
 import com.dbuconnect.data.models.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,8 +23,18 @@ class AppRepository @Inject constructor(
     private val eventDao: EventDao
 ) {
     // Auth
-    suspend fun login(phone: String, otp: String): Result<User> {
-        val result = api.login(phone, otp)
+    suspend fun login(email: String, password: String): Result<User> {
+        val result = api.login(email, password)
+        result.onSuccess { user ->
+            userDao.insertUser(user)
+            dataStore.setLoggedIn(true, user.id)
+            dataStore.setProfileComplete(user.isProfileComplete)
+        }
+        return result
+    }
+
+    suspend fun signUp(name: String, email: String, phone: String, password: String): Result<User> {
+        val result = api.signUp(name, email, phone, password)
         result.onSuccess { user ->
             userDao.insertUser(user)
             dataStore.setLoggedIn(true, user.id)
@@ -52,8 +65,11 @@ class AppRepository @Inject constructor(
         return userDao.getUser(userId)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     fun observeCurrentUser(): Flow<User?> {
-        return userDao.observeUser("current_user")
+        return dataStore.userId.flatMapLatest { id ->
+            if (id == null) flowOf(null) else userDao.observeUser(id)
+        }
     }
 
     suspend fun updateProfile(user: User): Result<User> {
@@ -104,6 +120,7 @@ class AppRepository @Inject constructor(
     fun observeNewMatches(): Flow<List<Match>> = matchDao.observeNewMatches()
     fun observeChats(): Flow<List<Match>> = matchDao.observeChats()
     fun observeAllMatches(): Flow<List<Match>> = matchDao.observeMatches()
+    fun observeMatch(matchId: String): Flow<Match?> = matchDao.observeMatch(matchId)
 
     // Messages
     suspend fun refreshMessages(chatId: String): Result<List<Message>> {
@@ -134,6 +151,14 @@ class AppRepository @Inject constructor(
     }
 
     fun observeEvents(): Flow<List<Event>> = eventDao.observeEvents()
+
+    suspend fun createEvent(event: Event): Result<Event> {
+        val result = api.createEvent(event)
+        result.onSuccess { newEvent ->
+            eventDao.insertEvents(listOf(newEvent))
+        }
+        return result
+    }
 
     suspend fun rsvpEvent(eventId: String, status: RsvpStatus): Result<Event> {
         val result = api.rsvpEvent(eventId, status)

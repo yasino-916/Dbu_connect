@@ -16,7 +16,8 @@ data class User(
     val intent: String,
     val email: String = "",
     val phone: String = "",
-    val isProfileComplete: Boolean = false
+    val isProfileComplete: Boolean = false,
+    val isAdmin: Boolean = false
 )
 
 @Entity(tableName = "profile_cards")
@@ -85,15 +86,11 @@ enum class RsvpStatus {
 data class PrivacySettings(
     val showDepartment: Boolean = true,
     val showYear: Boolean = true,
-    val showDistance: Boolean = false,
-    val campusMode: Boolean = true,
     val hideProfile: Boolean = false
 )
 
 data class FilterSettings(
-    val maxDistance: Float = 5f,
     val departments: List<String> = emptyList(),
     val yearRange: IntRange = 1..5,
-    val intent: String = "",
-    val campusOnly: Boolean = true
+    val intent: String = ""
 )

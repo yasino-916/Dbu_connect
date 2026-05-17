@@ -21,6 +21,9 @@ class EventsViewModel @Inject constructor(
     val events: StateFlow<List<Event>> = repository.observeEvents()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    val currentUser: StateFlow<User?> = repository.observeCurrentUser()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
+
     private val _selectedTag = MutableStateFlow<String?>(null)
     val selectedTag: StateFlow<String?> = _selectedTag.asStateFlow()
 

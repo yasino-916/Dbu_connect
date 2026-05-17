@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -36,11 +37,13 @@ import java.util.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EventsScreen(
+    onNavigateToCreateEvent: () -> Unit,
     viewModel: EventsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val events by viewModel.events.collectAsState()
     val selectedTag by viewModel.selectedTag.collectAsState()
+    val currentUser by viewModel.currentUser.collectAsState()
 
     val allTags = events.flatMap { it.tags }.distinct()
     val filteredEvents = if (selectedTag != null) {
@@ -52,23 +55,44 @@ fun EventsScreen(
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Outlined.School,
-                            contentDescription = null,
-                            tint = PrimaryGreen,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(
+                            shape = CircleShape,
+                            color = PrimaryGreenContainer,
+                            modifier = Modifier.size(40.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    Icons.Outlined.School,
+                                    contentDescription = null,
+                                    tint = PrimaryGreen,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             "Campus Events",
                             fontWeight = FontWeight.Bold,
-                            color = PrimaryGreen,
-                            fontSize = 20.sp
+                            color = TextPrimary,
+                            fontSize = 22.sp
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundPrimary),
+                modifier = Modifier.shadow(elevation = 2.dp, spotColor = Color.Black.copy(alpha = 0.05f))
             )
+        },
+        floatingActionButton = {
+            if (currentUser?.isAdmin == true) {
+                FloatingActionButton(
+                    onClick = onNavigateToCreateEvent,
+                    containerColor = PrimaryGreen,
+                    contentColor = Color.White,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                ) {
+                    Icon(Icons.Filled.Add, "Create Event")
+                }
+            }
         },
         containerColor = BackgroundPrimary
     ) { paddingValues ->
@@ -76,13 +100,14 @@ fun EventsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            contentPadding = PaddingValues(top = 20.dp, bottom = 100.dp, start = 20.dp, end = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Category tags
             item {
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(end = 20.dp)
                 ) {
                     item {
                         DBUChip(
@@ -107,7 +132,7 @@ fun EventsScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(200.dp),
+                                .height(300.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             CircularProgressIndicator(color = PrimaryGreen)
@@ -156,9 +181,9 @@ private fun EventCard(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp),
         color = Color.White,
-        shadowElevation = 1.dp
+        shadowElevation = 4.dp,
     ) {
         Column {
             // Event image
@@ -168,41 +193,41 @@ private fun EventCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .height(180.dp)
             )
 
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(20.dp)) {
                 // Tags
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    event.tags.take(2).forEach { tag ->
+                    event.tags.take(3).forEach { tag ->
                         Surface(
-                            shape = RoundedCornerShape(50),
+                            shape = RoundedCornerShape(8.dp),
                             color = PrimaryGreenContainer
                         ) {
                             Text(
                                 text = tag,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = PrimaryGreen
+                                fontWeight = FontWeight.SemiBold,
+                                color = PrimaryGreenDark
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
                     text = event.title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
                     color = TextPrimary,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 28.sp
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 // Date info
                 EventInfoRow(
@@ -211,7 +236,7 @@ private fun EventCard(
                     value = dateFormat.format(Date(event.dateTime))
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 EventInfoRow(
                     icon = Icons.Outlined.Schedule,
@@ -219,7 +244,7 @@ private fun EventCard(
                     value = timeFormat.format(Date(event.dateTime))
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 EventInfoRow(
                     icon = Icons.Outlined.LocationOn,
@@ -227,6 +252,8 @@ private fun EventCard(
                     value = event.location
                 )
 
+                Spacer(modifier = Modifier.height(24.dp))
+                HorizontalDivider(color = BorderDefault.copy(alpha = 0.5f))
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Attendees + RSVP
@@ -237,15 +264,16 @@ private fun EventCard(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = "${event.attendeeCount} Going",
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
                         if (event.attendeesFromDept > 0) {
                             Text(
                                 text = "Including ${event.attendeesFromDept} from your major",
                                 fontSize = 12.sp,
-                                color = TextSecondary
+                                color = TextSecondary,
+                                modifier = Modifier.padding(top = 2.dp)
                             )
                         }
                     }
@@ -255,12 +283,13 @@ private fun EventCard(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (event.rsvpStatus == RsvpStatus.GOING) PrimaryGreenContainer else PrimaryGreen,
-                            contentColor = if (event.rsvpStatus == RsvpStatus.GOING) PrimaryGreen else Color.White
-                        )
+                            contentColor = if (event.rsvpStatus == RsvpStatus.GOING) PrimaryGreenDark else Color.White
+                        ),
+                        modifier = Modifier.height(44.dp)
                     ) {
                         Text(
                             text = if (event.rsvpStatus == RsvpStatus.GOING) "Going ✓" else "RSVP Now",
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Bold,
                             fontSize = 14.sp
                         )
                     }
@@ -281,18 +310,18 @@ private fun EventInfoRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
-            modifier = Modifier.size(36.dp),
+            modifier = Modifier.size(40.dp),
             shape = CircleShape,
-            color = PrimaryGreenContainer
+            color = SurfaceMuted
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(18.dp))
+                Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(20.dp))
             }
         }
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = label, fontSize = 12.sp, color = TextSecondary)
-            Text(text = value, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
+            Text(text = label, fontSize = 12.sp, color = TextSecondary, fontWeight = FontWeight.Medium)
+            Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
         }
     }
 }

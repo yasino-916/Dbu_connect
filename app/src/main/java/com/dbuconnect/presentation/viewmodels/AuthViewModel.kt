@@ -10,13 +10,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class AuthState(
-    val phone: String = "",
     val email: String = "",
-    val otp: String = "",
-    val name: String = "",
     val password: String = "",
-    val isPhoneMode: Boolean = true,
-    val isOtpSent: Boolean = false,
+    val name: String = "",
+    val phone: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
     val user: User? = null,
@@ -32,56 +29,62 @@ class AuthViewModel @Inject constructor(
     private val _state = MutableStateFlow(AuthState())
     val state: StateFlow<AuthState> = _state.asStateFlow()
 
-    fun updatePhone(phone: String) {
-        _state.update { it.copy(phone = phone, error = null) }
-    }
-
     fun updateEmail(email: String) {
         _state.update { it.copy(email = email, error = null) }
-    }
-
-    fun updateOtp(otp: String) {
-        _state.update { it.copy(otp = otp, error = null) }
-    }
-
-    fun updateName(name: String) {
-        _state.update { it.copy(name = name, error = null) }
     }
 
     fun updatePassword(password: String) {
         _state.update { it.copy(password = password, error = null) }
     }
 
-    fun togglePhoneMode() {
-        _state.update { it.copy(isPhoneMode = !it.isPhoneMode, error = null) }
+    fun updateName(name: String) {
+        _state.update { it.copy(name = name, error = null) }
+    }
+
+    fun updatePhone(phone: String) {
+        _state.update { it.copy(phone = phone, error = null) }
     }
 
     fun toggleSignUpMode() {
         _state.update { it.copy(isSignUpMode = !it.isSignUpMode, error = null) }
     }
 
-    fun sendOtp() {
-        val phone = _state.value.phone
-        if (phone.length < 9) {
-            _state.update { it.copy(error = "Please enter a valid phone number") }
-            return
-        }
-        _state.update { it.copy(isOtpSent = true, error = null) }
+    /**
+     * Validates that the email is a DBU university email (ends with @dbu.edu.et)
+     */
+    private fun isValidDBUEmail(email: String): Boolean {
+        return email.isNotBlank() && email.trim().lowercase().endsWith("@dbu.edu.et")
     }
 
     fun login() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 
-            val phone = _state.value.phone
-            val otp = _state.value.otp
+            val email = _state.value.email.trim()
+            val password = _state.value.password
 
-            if (otp.length < 4) {
-                _state.update { it.copy(isLoading = false, error = "Please enter the verification code") }
+            // Validate university email
+            if (!isValidDBUEmail(email)) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Please use your university email (e.g., name@dbu.edu.et)"
+                    )
+                }
                 return@launch
             }
 
-            val result = repository.login(phone, otp)
+            if (password.length < 6) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Password must be at least 6 characters"
+                    )
+                }
+                return@launch
+            }
+
+            val result = repository.login(email, password)
             result.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
@@ -94,7 +97,38 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 
-            val result = repository.login(_state.value.phone, "mock_otp")
+            val email = _state.value.email.trim()
+            val password = _state.value.password
+            val name = _state.value.name
+
+            // Validate name
+            if (name.isBlank()) {
+                _state.update { it.copy(isLoading = false, error = "Please enter your full name") }
+                return@launch
+            }
+
+            // Validate university email
+            if (!isValidDBUEmail(email)) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Please use your university email (e.g., name@dbu.edu.et)"
+                    )
+                }
+                return@launch
+            }
+
+            if (password.length < 6) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Password must be at least 6 characters"
+                    )
+                }
+                return@launch
+            }
+
+            val result = repository.signUp(name.trim(), email, _state.value.phone.trim(), password)
             result.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->

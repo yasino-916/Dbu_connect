@@ -7,7 +7,7 @@ import com.dbuconnect.data.models.*
 
 @Database(
     entities = [User::class, ProfileCard::class, Match::class, Message::class, Event::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

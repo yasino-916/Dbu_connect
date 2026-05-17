@@ -65,6 +65,7 @@ class ProfileViewModel @Inject constructor(
     fun updateBio(bio: String) { _state.update { it.copy(editBio = bio) } }
     fun updateDepartment(dept: String) { _state.update { it.copy(editDepartment = dept) } }
     fun updateYear(year: Int) { _state.update { it.copy(editYear = year) } }
+    fun updatePhotos(photos: List<String>) { _state.update { it.copy(editPhotos = photos) } }
 
     fun toggleInterest(interest: String) {
         _state.update { state ->

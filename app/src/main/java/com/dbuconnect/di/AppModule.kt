@@ -4,12 +4,23 @@ import android.content.Context
 import androidx.room.Room
 import com.dbuconnect.data.api.DBUApiService
 import com.dbuconnect.data.api.MockApiService
+import com.dbuconnect.data.api.SupabaseApiService
+import com.dbuconnect.data.api.SupabaseConfig
+import com.dbuconnect.data.api.SupabaseRestApi
+import com.dbuconnect.data.datastore.AppDataStore
 import com.dbuconnect.data.db.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module
@@ -43,5 +54,43 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiService(mockApiService: MockApiService): DBUApiService = mockApiService
+    fun provideSupabaseOkHttpClient(dataStore: AppDataStore): OkHttpClient {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
+        }
+
+        return OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val token = runBlocking { dataStore.authToken.first() }
+                val bearer = token ?: SupabaseConfig.anonKey
+                val request = chain.request().newBuilder()
+                    .addHeader("apikey", SupabaseConfig.anonKey)
+                    .addHeader("Authorization", "Bearer $bearer")
+                    .build()
+                chain.proceed(request)
+            }
+            .addInterceptor(logging)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideSupabaseRestApi(client: OkHttpClient): SupabaseRestApi {
+        val baseUrl = if (SupabaseConfig.isConfigured) SupabaseConfig.url else "https://example.supabase.co"
+        return Retrofit.Builder()
+            .baseUrl("$baseUrl/")
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SupabaseRestApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideApiService(
+        mockApiService: MockApiService,
+        supabaseApiService: Provider<SupabaseApiService>
+    ): DBUApiService {
+        return if (SupabaseConfig.isConfigured) supabaseApiService.get() else mockApiService
+    }
 }

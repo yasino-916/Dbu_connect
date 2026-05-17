@@ -1,5 +1,6 @@
 package com.dbuconnect.presentation.screens.profile
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,11 +29,16 @@ import com.dbuconnect.presentation.viewmodels.ProfileViewModel
 
 @Composable
 fun ProfileScreen(
+    onNavigateToEditProfile: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
+    val showComingSoon: (String) -> Unit = { feature ->
+        Toast.makeText(context, "$feature is coming soon", Toast.LENGTH_SHORT).show()
+    }
 
     Column(
         modifier = Modifier
@@ -112,7 +119,7 @@ fun ProfileScreen(
             ProfileMenuItem(
                 icon = Icons.Outlined.Edit,
                 title = "Edit Profile",
-                onClick = {}
+                onClick = onNavigateToEditProfile
             )
 
             ProfileMenuItem(
@@ -124,19 +131,19 @@ fun ProfileScreen(
             ProfileMenuItem(
                 icon = Icons.Outlined.Notifications,
                 title = "Notification Preferences",
-                onClick = {}
+                onClick = { showComingSoon("Notification preferences") }
             )
 
             ProfileMenuItem(
                 icon = Icons.Outlined.Help,
                 title = "Help & Support",
-                onClick = {}
+                onClick = { showComingSoon("Help and support") }
             )
 
             ProfileMenuItem(
                 icon = Icons.Outlined.Info,
                 title = "About DBU Connect",
-                onClick = {}
+                onClick = { showComingSoon("About DBU Connect") }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -199,6 +206,7 @@ private fun ProfileMenuItem(
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -234,9 +242,8 @@ fun SettingsScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-            // Group 1: Account
             Text(
-                text = "Group 1",
+                text = "Account",
                 fontSize = 13.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -259,9 +266,8 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Group 2: Visibility Toggles
             Text(
-                text = "Group 2: Visibility Toggles",
+                text = "Visibility",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = TextSecondary,
@@ -282,23 +288,13 @@ fun SettingsScreen(
                             viewModel.updatePrivacySetting(privacy.copy(hideProfile = it))
                         }
                     )
-                    HorizontalDivider(color = BorderDefault, modifier = Modifier.padding(horizontal = 16.dp))
-                    SettingsToggle(
-                        icon = Icons.Outlined.Visibility,
-                        title = "Campus only",
-                        checked = privacy.campusMode,
-                        onCheckedChange = {
-                            viewModel.updatePrivacySetting(privacy.copy(campusMode = it))
-                        }
-                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Group 3: Blocked List
             Text(
-                text = "Group 3",
+                text = "Safety",
                 fontSize = 13.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -321,9 +317,8 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Group 4: Notifications
             Text(
-                text = "Group 4",
+                text = "Notifications",
                 fontSize = 13.sp,
                 color = TextSecondary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
@@ -348,7 +343,10 @@ fun SettingsScreen(
 
             // Logout
             TextButton(
-                onClick = onBack,
+                onClick = {
+                    viewModel.logout()
+                    onLogout()
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(

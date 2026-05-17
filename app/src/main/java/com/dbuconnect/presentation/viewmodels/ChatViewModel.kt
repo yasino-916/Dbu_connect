@@ -34,7 +34,24 @@ class ChatViewModel @Inject constructor(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     init {
+        observeMatch()
         loadMessages()
+    }
+
+    private fun observeMatch() {
+        viewModelScope.launch {
+            repository.observeMatch(matchId).collect { match ->
+                if (match != null) {
+                    _state.update {
+                        it.copy(
+                            matchName = match.userName,
+                            matchPhotoUrl = match.userPhotoUrl,
+                            isOnline = match.isOnline
+                        )
+                    }
+                }
+            }
+        }
     }
 
     private fun loadMessages() {

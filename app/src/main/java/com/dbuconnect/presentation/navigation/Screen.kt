@@ -18,10 +18,12 @@ sealed class Screen(val route: String) {
         fun createRoute(matchId: String) = "chat/$matchId"
     }
     data object Events : Screen("events")
+    data object CreateEvent : Screen("create_event")
     data object EventDetail : Screen("event/{eventId}") {
         fun createRoute(eventId: String) = "event/$eventId"
     }
     data object Profile : Screen("profile")
+    data object EditProfile : Screen("edit_profile")
     data object Settings : Screen("settings")
     data object MatchSuccess : Screen("match_success/{matchId}") {
         fun createRoute(matchId: String) = "match_success/$matchId"

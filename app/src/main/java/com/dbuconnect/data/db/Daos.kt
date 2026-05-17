@@ -45,6 +45,9 @@ interface MatchDao {
     @Query("SELECT * FROM matches ORDER BY createdAt DESC")
     fun observeMatches(): Flow<List<Match>>
 
+    @Query("SELECT * FROM matches WHERE id = :matchId")
+    fun observeMatch(matchId: String): Flow<Match?>
+
     @Query("SELECT * FROM matches WHERE isNew = 1")
     fun observeNewMatches(): Flow<List<Match>>
 

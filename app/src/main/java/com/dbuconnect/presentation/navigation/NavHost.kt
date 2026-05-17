@@ -186,10 +186,7 @@ fun DBUConnectNavHost(
                 route = Screen.Chat.route,
                 arguments = listOf(navArgument("matchId") { type = NavType.StringType })
             ) { backStackEntry ->
-                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
                 ChatScreen(
-                    matchName = "Sarah J.",
-                    matchPhotoUrl = "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200",
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -212,12 +209,23 @@ fun DBUConnectNavHost(
 
             // Events
             composable(Screen.Events.route) {
-                EventsScreen()
+                EventsScreen(
+                    onNavigateToCreateEvent = {
+                        navController.navigate(Screen.CreateEvent.route)
+                    }
+                )
+            }
+            
+            composable(Screen.CreateEvent.route) {
+                com.dbuconnect.presentation.screens.events.CreateEventScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             // Profile
             composable(Screen.Profile.route) {
                 ProfileScreen(
+                    onNavigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
                     onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                     onLogout = {
                         navController.navigate(Screen.Login.route) {
@@ -227,9 +235,22 @@ fun DBUConnectNavHost(
                 )
             }
 
+            composable(Screen.EditProfile.route) {
+                ProfileSetupScreen(
+                    onComplete = { navController.popBackStack() }
+                )
+            }
+
             // Settings
             composable(Screen.Settings.route) {
-                SettingsScreen(onBack = { navController.popBackStack() })
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    onLogout = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                )
             }
         }
     }

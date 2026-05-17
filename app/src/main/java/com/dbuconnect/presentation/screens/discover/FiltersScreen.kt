@@ -1,14 +1,18 @@
 package com.dbuconnect.presentation.screens.discover
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -17,6 +21,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dbuconnect.data.models.FilterSettings
 import com.dbuconnect.presentation.components.DBUChip
 import com.dbuconnect.presentation.components.PrimaryButton
+import com.dbuconnect.presentation.screens.setup.collegesDepartments
 import com.dbuconnect.presentation.theme.*
 import com.dbuconnect.presentation.viewmodels.DiscoverViewModel
 
@@ -27,177 +32,247 @@ fun FiltersScreen(
     viewModel: DiscoverViewModel = hiltViewModel()
 ) {
     val filters by viewModel.filters.collectAsState()
-    var distance by remember { mutableFloatStateOf(filters.maxDistance) }
-    var campusOnly by remember { mutableStateOf(filters.campusOnly) }
     var selectedDepts by remember { mutableStateOf(filters.departments) }
     var yearMin by remember { mutableFloatStateOf(filters.yearRange.first.toFloat()) }
     var yearMax by remember { mutableFloatStateOf(filters.yearRange.last.toFloat()) }
     var intent by remember { mutableStateOf(filters.intent) }
 
-    val departments = listOf(
-        "Computer Science", "Electrical Engineering", "Civil Engineering",
-        "Business Administration", "Medicine", "Law", "Architecture",
-        "Chemistry", "Physics", "Mathematics"
-    )
+    // Use college->department mapping for organized filtering
+    var expandedCollege by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Filters", fontWeight = FontWeight.SemiBold) },
+                title = { 
+                    Text(
+                        "Refine Search", 
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    ) 
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, "Back")
+                        Icon(Icons.Filled.ArrowBack, "Back", tint = TextPrimary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundPrimary),
+                modifier = Modifier.shadow(elevation = 2.dp, spotColor = Color.Black.copy(alpha = 0.05f))
             )
         },
         bottomBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = Color.White,
-                shadowElevation = 8.dp
+                modifier = Modifier.fillMaxWidth().shadow(16.dp, spotColor = Color.Black.copy(alpha = 0.1f)),
+                color = Color.White
             ) {
                 PrimaryButton(
                     text = "Apply Filters",
                     onClick = {
                         viewModel.updateFilters(
                             FilterSettings(
-                                maxDistance = distance,
                                 departments = selectedDepts,
                                 yearRange = yearMin.toInt()..yearMax.toInt(),
-                                intent = intent,
-                                campusOnly = campusOnly
+                                intent = intent
                             )
                         )
                         onBack()
                     },
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(20.dp).height(54.dp)
                 )
             }
         },
-        containerColor = Color.White
+        containerColor = BackgroundPrimary
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campus Mode Toggle
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                color = if (campusOnly) PrimaryGreenContainer else SurfaceMuted,
-                border = BorderStroke(1.dp, if (campusOnly) PrimaryGreen else BorderDefault)
+            // Department Filter Card
+            FilterSectionCard(
+                title = "Department",
+                subtitle = "Filter by college to find students in specific departments"
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column {
-                        Text("Campus Mode", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        Text("DBU students only", color = TextSecondary, fontSize = 13.sp)
-                    }
-                    Switch(
-                        checked = campusOnly,
-                        onCheckedChange = { campusOnly = it },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.White,
-                            checkedTrackColor = PrimaryGreen,
-                            uncheckedThumbColor = Color.White,
-                            uncheckedTrackColor = BorderDefault
-                        )
-                    )
-                }
-            }
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    collegesDepartments.forEach { (college, depts) ->
+                        val isExpanded = expandedCollege == college
+                        val selectedCount = depts.count { it in selectedDepts }
+                        
+                        Surface(
+                            onClick = {
+                                expandedCollege = if (isExpanded) null else college
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isExpanded) PrimaryGreenContainer else Color.White,
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = if (selectedCount > 0) PrimaryGreen.copy(alpha = 0.5f) else BorderDefault
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.animateContentSize()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = college,
+                                        fontSize = 15.sp,
+                                        fontWeight = if (isExpanded) FontWeight.SemiBold else FontWeight.Medium,
+                                        color = if (isExpanded) PrimaryGreenDark else TextPrimary
+                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        if (selectedCount > 0) {
+                                            Surface(
+                                                shape = RoundedCornerShape(50),
+                                                color = PrimaryGreen,
+                                                modifier = Modifier.padding(end = 8.dp)
+                                            ) {
+                                                Text(
+                                                    text = "$selectedCount",
+                                                    fontSize = 11.sp,
+                                                    color = Color.White,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                                )
+                                            }
+                                        }
+                                        Icon(
+                                            imageVector = if (isExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                                            contentDescription = null,
+                                            tint = if (isExpanded) PrimaryGreen else TextSecondary
+                                        )
+                                    }
+                                }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Distance
-            Text("Distance", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("${distance.toInt()} km radius", color = TextSecondary, fontSize = 13.sp)
-            Slider(
-                value = distance,
-                onValueChange = { distance = it },
-                valueRange = 1f..20f,
-                steps = 18,
-                colors = SliderDefaults.colors(
-                    thumbColor = PrimaryGreen,
-                    activeTrackColor = PrimaryGreen,
-                    inactiveTrackColor = BorderDefault
-                )
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Department
-            Text("Department", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                departments.forEach { dept ->
-                    DBUChip(
-                        label = dept,
-                        selected = selectedDepts.contains(dept),
-                        onClick = {
-                            selectedDepts = if (selectedDepts.contains(dept)) {
-                                selectedDepts - dept
-                            } else {
-                                selectedDepts + dept
+                                if (isExpanded) {
+                                    HorizontalDivider(color = PrimaryGreen.copy(alpha = 0.1f))
+                                    FlowRow(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        depts.forEach { dept ->
+                                            DBUChip(
+                                                label = dept,
+                                                selected = selectedDepts.contains(dept),
+                                                onClick = {
+                                                    selectedDepts = if (selectedDepts.contains(dept)) {
+                                                        selectedDepts - dept
+                                                    } else {
+                                                        selectedDepts + dept
+                                                    }
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
-                    )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Year Range
-            Text("Year Range", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text("Year ${yearMin.toInt()} - ${yearMax.toInt()}", color = TextSecondary, fontSize = 13.sp)
-            RangeSlider(
-                value = yearMin..yearMax,
-                onValueChange = { range ->
-                    yearMin = range.start
-                    yearMax = range.endInclusive
-                },
-                valueRange = 1f..5f,
-                steps = 3,
-                colors = SliderDefaults.colors(
-                    thumbColor = PrimaryGreen,
-                    activeTrackColor = PrimaryGreen,
-                    inactiveTrackColor = BorderDefault
+            // Year Range Card
+            FilterSectionCard(
+                title = "Year Range",
+                subtitle = "Year ${yearMin.toInt()} - ${yearMax.toInt()}"
+            ) {
+                RangeSlider(
+                    value = yearMin..yearMax,
+                    onValueChange = { range ->
+                        yearMin = range.start
+                        yearMax = range.endInclusive
+                    },
+                    valueRange = 1f..5f,
+                    steps = 3,
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.White,
+                        activeTrackColor = PrimaryGreen,
+                        inactiveTrackColor = BorderDefault
+                    ),
+                    modifier = Modifier.padding(horizontal = 8.dp)
                 )
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Intent
-            Text("Looking for", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("", "Friends", "Dating", "Study Buddy").forEach { item ->
-                    DBUChip(
-                        label = if (item.isEmpty()) "Any" else item,
-                        selected = intent == item,
-                        onClick = { intent = item }
-                    )
+                // Markers
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    (1..5).forEach { year ->
+                        Text(
+                            text = year.toString(),
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = TextSecondary
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(100.dp))
+            // Intent Card
+            FilterSectionCard(
+                title = "Looking for",
+                subtitle = "What kind of connection are you seeking?"
+            ) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    listOf("", "Friends", "Dating", "Study Buddy").forEach { item ->
+                        DBUChip(
+                            label = if (item.isEmpty()) "Any Connection" else item,
+                            selected = intent == item,
+                            onClick = { intent = item }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(60.dp))
+        }
+    }
+}
+
+@Composable
+private fun FilterSectionCard(
+    title: String,
+    subtitle: String,
+    content: @Composable () -> Unit
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White,
+        shadowElevation = 2.dp,
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                fontSize = 13.sp,
+                color = TextSecondary,
+                lineHeight = 18.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            content()
         }
     }
 }

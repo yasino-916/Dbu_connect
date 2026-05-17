@@ -30,8 +30,6 @@ import com.dbuconnect.presentation.viewmodels.ChatViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
-    matchName: String,
-    matchPhotoUrl: String,
     onBack: () -> Unit,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
@@ -54,7 +52,7 @@ fun ChatScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AsyncImage(
-                            model = matchPhotoUrl,
+                            model = state.matchPhotoUrl,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -63,7 +61,7 @@ fun ChatScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = matchName.ifEmpty { "Chat" },
+                            text = state.matchName.ifEmpty { "Chat" },
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 18.sp,
                             color = TextPrimary

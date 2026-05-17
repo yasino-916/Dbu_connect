@@ -87,7 +87,7 @@ class MockApiService @Inject constructor() : DBUApiService {
         Message("msg_7", "match_0", "current_user", "Hey! How was your day?", System.currentTimeMillis() - 240000, MessageStatus.SENT)
     )
 
-    private val mockEvents = listOf(
+    private var mockEvents = listOf(
         Event(
             id = "event_1",
             title = "Annual Engineering Social",
@@ -143,21 +143,51 @@ class MockApiService @Inject constructor() : DBUApiService {
         return start + Math.random().toFloat() * (endInclusive - start)
     }
 
-    override suspend fun login(phone: String, otp: String): Result<User> {
+    override suspend fun login(email: String, password: String): Result<User> {
         delay(1200)
+        
+        val isAdmin = email.lowercase() == "admin@dbu.edu.et"
+        
         return Result.success(
             User(
-                id = "current_user",
-                name = "Dani M.",
+                id = if (isAdmin) "admin_user" else "current_user",
+                name = if (isAdmin) "Campus Admin" else "Dani M.",
                 age = 21,
                 department = "Computer Science",
                 year = 3,
-                bio = "Love coding and campus life!",
+                bio = if (isAdmin) "DBU Connect Administrator" else "Love coding and campus life!",
                 photos = listOf(photoUrls[0]),
                 interests = listOf("Coffee", "Sports", "Music", "Studying", "Volunteering"),
-                intent = "Dating",
+                intent = "Friends",
+                email = email,
+                isProfileComplete = true,
+                isAdmin = isAdmin
+            )
+        )
+    }
+
+    override suspend fun signUp(
+        name: String,
+        email: String,
+        phone: String,
+        password: String
+    ): Result<User> {
+        delay(1200)
+
+        return Result.success(
+            User(
+                id = "user_${UUID.randomUUID()}",
+                name = name,
+                age = 18,
+                department = "",
+                year = 1,
+                bio = "",
+                photos = emptyList(),
+                interests = emptyList(),
+                intent = "Friends",
+                email = email,
                 phone = phone,
-                isProfileComplete = true
+                isProfileComplete = false
             )
         )
     }
@@ -217,6 +247,15 @@ class MockApiService @Inject constructor() : DBUApiService {
     override suspend fun getEvents(): Result<List<Event>> {
         delay(600)
         return Result.success(mockEvents)
+    }
+
+    override suspend fun createEvent(event: Event): Result<Event> {
+        delay(800)
+        val newEvent = event.copy(id = "event_${System.currentTimeMillis()}")
+        val mutableEvents = mockEvents.toMutableList()
+        mutableEvents.add(0, newEvent)
+        mockEvents = mutableEvents
+        return Result.success(newEvent)
     }
 
     override suspend fun rsvpEvent(eventId: String, status: RsvpStatus): Result<Event> {

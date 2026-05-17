@@ -99,7 +99,7 @@ fun DiscoverScreen(
                     )
                     IconButton(onClick = onOpenFilters) {
                         Icon(
-                            Icons.Outlined.Settings,
+                            Icons.Outlined.FilterList,
                             contentDescription = "Filters",
                             tint = TextSecondary
                         )
