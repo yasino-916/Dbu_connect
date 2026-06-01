@@ -50,7 +50,7 @@ fun MatchesScreen(
                 actions = {}
             )
         },
-        containerColor = Color.White
+        containerColor = BackgroundWhite
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -183,7 +183,7 @@ private fun NewMatchItem(
                         .size(14.dp)
                         .clip(CircleShape)
                         .background(StatusOnline)
-                        .border(2.dp, Color.White, CircleShape)
+                        .border(2.dp, BackgroundWhite, CircleShape)
                         .align(Alignment.BottomEnd)
                 )
             }
@@ -226,7 +226,7 @@ private fun ChatListItem(
                         .size(12.dp)
                         .clip(CircleShape)
                         .background(StatusOnline)
-                        .border(2.dp, Color.White, CircleShape)
+                        .border(2.dp, BackgroundWhite, CircleShape)
                         .align(Alignment.BottomEnd)
                 )
             }

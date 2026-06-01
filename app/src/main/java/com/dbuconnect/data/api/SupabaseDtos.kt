@@ -20,6 +20,10 @@ data class SignUpRequest(
     val data: Map<String, String>
 )
 
+data class RecoverRequest(
+    val email: String
+)
+
 data class SupabaseAuthResponse(
     @SerializedName("access_token") val accessToken: String?,
     val user: SupabaseAuthUser?

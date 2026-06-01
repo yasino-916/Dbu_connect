@@ -46,7 +46,7 @@ fun LoginScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundWhite)
             .systemBarsPadding()
             .imePadding()
             .verticalScroll(rememberScrollState())
@@ -112,8 +112,8 @@ fun LoginScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = BorderDefault,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedContainerColor = BackgroundWhite,
+                unfocusedContainerColor = BackgroundWhite
             ),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
@@ -154,8 +154,8 @@ fun LoginScreen(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = BorderDefault,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedContainerColor = BackgroundWhite,
+                unfocusedContainerColor = BackgroundWhite
             ),
             singleLine = true
         )
@@ -282,7 +282,7 @@ fun SignUpScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                color = Color.White,
+                color = BackgroundWhite,
                 shadowElevation = 1.dp
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {

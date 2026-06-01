@@ -86,7 +86,7 @@ fun CreateEventScreen(
         bottomBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth().shadow(16.dp, spotColor = Color.Black.copy(alpha = 0.1f)),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 PrimaryButton(
                     text = if (isPublishing) "Publishing..." else "Publish Event",
@@ -142,8 +142,8 @@ fun CreateEventScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryGreen,
                     unfocusedBorderColor = BorderDefault,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = BackgroundWhite,
+                    unfocusedContainerColor = BackgroundWhite
                 ),
                 singleLine = true
             )
@@ -159,8 +159,8 @@ fun CreateEventScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryGreen,
                     unfocusedBorderColor = BorderDefault,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = BackgroundWhite,
+                    unfocusedContainerColor = BackgroundWhite
                 )
             )
             
@@ -177,8 +177,8 @@ fun CreateEventScreen(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryGreen,
                         unfocusedBorderColor = BorderDefault,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = BackgroundWhite,
+                        unfocusedContainerColor = BackgroundWhite
                     ),
                     singleLine = true
                 )
@@ -195,8 +195,8 @@ fun CreateEventScreen(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = PrimaryGreen,
                         unfocusedBorderColor = BorderDefault,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = BackgroundWhite,
+                        unfocusedContainerColor = BackgroundWhite
                     ),
                     singleLine = true
                 )
@@ -214,8 +214,8 @@ fun CreateEventScreen(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = PrimaryGreen,
                     unfocusedBorderColor = BorderDefault,
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    focusedContainerColor = BackgroundWhite,
+                    unfocusedContainerColor = BackgroundWhite
                 ),
                 singleLine = true
             )

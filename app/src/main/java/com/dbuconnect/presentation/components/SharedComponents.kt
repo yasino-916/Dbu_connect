@@ -105,7 +105,7 @@ fun GoogleButton(
         border = BorderStroke(1.dp, BorderDefault),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = TextPrimary,
-            containerColor = Color.White
+            containerColor = BackgroundWhite
         ),
         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {
@@ -241,7 +241,7 @@ fun AppTopBar(
         navigationIcon = { navigationIcon?.invoke() },
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.White,
+            containerColor = BackgroundWhite,
             titleContentColor = PrimaryGreen
         )
     )

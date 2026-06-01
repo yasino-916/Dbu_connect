@@ -14,6 +14,9 @@ interface SupabaseRestApi {
     @POST("auth/v1/signup")
     suspend fun signUp(@Body request: SignUpRequest): SupabaseAuthResponse
 
+    @POST("auth/v1/recover")
+    suspend fun recoverPassword(@Body request: RecoverRequest)
+
     @GET("rest/v1/profiles")
     suspend fun getProfiles(
         @Query("select") select: String = "*",

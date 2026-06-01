@@ -87,7 +87,7 @@ fun DBUConnectNavHost(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar(
-                    containerColor = Color.White,
+                    containerColor = BackgroundWhite,
                     contentColor = PrimaryGreen,
                     tonalElevation = 0.dp
                 ) {

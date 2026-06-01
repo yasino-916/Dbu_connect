@@ -106,7 +106,7 @@ fun DiscoverScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+                    containerColor = BackgroundWhite
                 )
             )
         },

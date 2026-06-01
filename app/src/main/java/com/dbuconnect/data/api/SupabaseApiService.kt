@@ -112,20 +112,14 @@ class SupabaseApiService @Inject constructor(
     }
 
     override suspend fun getMatches(): Result<List<Match>> = runCatching {
-        val remote = runCatching { api.getMatchesForCurrentUser().map { it.toMatch() } }.getOrNull() ?: emptyList()
-        if (remote.isEmpty()) {
-            MockApiService().getMatches().getOrThrow()
-        } else {
-            remote
-        }
+        runCatching { api.getMatchesForCurrentUser().map { it.toMatch() } }.getOrNull() ?: emptyList()
     }
 
     override suspend fun getMessages(chatId: String): Result<List<Message>> = runCatching {
-        val remote = runCatching { api.getMessages(chatFilter = "eq.$chatId").map { it.toMessage() } }.getOrNull() ?: emptyList()
-        if (remote.isEmpty()) {
+        if (chatId.startsWith("match_")) {
             MockApiService().getMessages(chatId).getOrThrow()
         } else {
-            remote
+            runCatching { api.getMessages(chatFilter = "eq.$chatId").map { it.toMessage() } }.getOrNull() ?: emptyList()
         }
     }
 

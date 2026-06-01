@@ -69,9 +69,10 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun DBUConnectTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = ThemeManager.userDarkModeOverride ?: isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    isAppInDarkTheme = darkTheme
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
 
     val view = LocalView.current

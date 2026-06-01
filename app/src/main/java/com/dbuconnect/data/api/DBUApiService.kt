@@ -5,6 +5,7 @@ import com.dbuconnect.data.models.*
 interface DBUApiService {
     suspend fun login(email: String, password: String): Result<User>
     suspend fun signUp(name: String, email: String, phone: String, password: String): Result<User>
+    suspend fun recoverPassword(email: String): Result<Unit>
     suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>>
     suspend fun likeProfile(userId: String): Result<Match?>
     suspend fun passProfile(userId: String): Result<Unit>

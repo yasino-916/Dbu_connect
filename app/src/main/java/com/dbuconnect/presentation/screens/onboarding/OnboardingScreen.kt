@@ -50,7 +50,7 @@ fun OnboardingScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundWhite)
             .systemBarsPadding()
     ) {
         // Skip button (not on last page)
@@ -359,7 +359,7 @@ private fun IntentCard(
             .fillMaxWidth()
             .height(72.dp),
         shape = RoundedCornerShape(16.dp),
-        color = if (selected) PrimaryGreenContainer else Color.White,
+        color = if (selected) PrimaryGreenContainer else BackgroundWhite,
         border = BorderStroke(
             width = if (selected) 2.dp else 1.dp,
             color = if (selected) PrimaryGreen else BorderDefault

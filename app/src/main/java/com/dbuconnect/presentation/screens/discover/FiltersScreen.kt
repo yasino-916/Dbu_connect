@@ -64,7 +64,7 @@ fun FiltersScreen(
         bottomBar = {
             Surface(
                 modifier = Modifier.fillMaxWidth().shadow(16.dp, spotColor = Color.Black.copy(alpha = 0.1f)),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 PrimaryButton(
                     text = "Apply Filters",
@@ -109,7 +109,7 @@ fun FiltersScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(12.dp),
-                                color = if (isExpanded) PrimaryGreenContainer else Color.White,
+                                color = if (isExpanded) PrimaryGreenContainer else BackgroundWhite,
                                 border = BorderStroke(
                                     width = 1.dp,
                                     color = if (selectedCount > 0) PrimaryGreen.copy(alpha = 0.5f) else BorderDefault
@@ -257,7 +257,7 @@ private fun FilterSectionCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        color = Color.White,
+        color = BackgroundWhite,
         shadowElevation = 2.dp,
     ) {
         Column(

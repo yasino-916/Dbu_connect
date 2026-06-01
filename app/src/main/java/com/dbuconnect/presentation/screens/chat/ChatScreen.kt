@@ -112,12 +112,12 @@ fun ChatScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = BackgroundWhite)
             )
         },
         bottomBar = {
             Column(
-                modifier = Modifier.background(Color.White)
+                modifier = Modifier.background(BackgroundWhite)
             ) {
                 // Quick prompts
                 LazyRow(
@@ -185,7 +185,7 @@ fun ChatScreen(
                 }
             }
         },
-        containerColor = Color.White
+        containerColor = BackgroundWhite
     ) { paddingValues ->
         if (state.isLoading) {
             Box(

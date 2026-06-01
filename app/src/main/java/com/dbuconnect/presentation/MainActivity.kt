@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.dbuconnect.presentation.navigation.DBUConnectNavHost
 import com.dbuconnect.presentation.theme.DBUConnectTheme
+import com.dbuconnect.presentation.theme.ThemeManager
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,6 +17,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        ThemeManager.init(this)
         setContent {
             DBUConnectTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {

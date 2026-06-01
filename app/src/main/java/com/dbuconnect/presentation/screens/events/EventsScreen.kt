@@ -182,7 +182,7 @@ private fun EventCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        color = Color.White,
+        color = BackgroundWhite,
         shadowElevation = 4.dp,
     ) {
         Column {

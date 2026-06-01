@@ -5,7 +5,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-val DBUTypography = Typography(
+val DBUTypography: Typography
+    get() = Typography(
     // H1 - 28sp semiBold
     headlineLarge = TextStyle(
         fontSize = 28.sp,

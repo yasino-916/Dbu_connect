@@ -112,6 +112,7 @@ class AppRepository @Inject constructor(
     suspend fun refreshMatches(): Result<List<Match>> {
         val result = api.getMatches()
         result.onSuccess { matches ->
+            matchDao.deleteAll()
             matchDao.insertMatches(matches)
         }
         return result
@@ -134,6 +135,7 @@ class AppRepository @Inject constructor(
     suspend fun refreshMessages(chatId: String): Result<List<Message>> {
         val result = api.getMessages(chatId)
         result.onSuccess { messages ->
+            messageDao.deleteMessagesForChat(chatId)
             messageDao.insertMessages(messages)
         }
         return result
@@ -158,6 +160,7 @@ class AppRepository @Inject constructor(
     suspend fun refreshEvents(): Result<List<Event>> {
         val result = api.getEvents()
         result.onSuccess { events ->
+            eventDao.deleteAll()
             eventDao.insertEvents(events)
         }
         return result

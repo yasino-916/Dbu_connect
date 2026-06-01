@@ -165,7 +165,7 @@ fun ProfileSetupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundWhite)
             .systemBarsPadding()
             .imePadding()
     ) {
@@ -535,8 +535,8 @@ private fun BasicInfoStep(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = PrimaryGreen,
             unfocusedBorderColor = BorderDefault,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
+            focusedContainerColor = BackgroundWhite,
+            unfocusedContainerColor = BackgroundWhite
         ),
         singleLine = true
     )
@@ -557,8 +557,8 @@ private fun BasicInfoStep(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = BorderDefault,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedContainerColor = BackgroundWhite,
+                unfocusedContainerColor = BackgroundWhite
             )
         )
         Box(
@@ -605,8 +605,8 @@ private fun BasicInfoStep(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = BorderDefault,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
+                focusedContainerColor = BackgroundWhite,
+                unfocusedContainerColor = BackgroundWhite,
                 disabledBorderColor = BorderDefault.copy(alpha = 0.5f),
                 disabledContainerColor = SurfaceMuted
             )
@@ -653,8 +653,8 @@ private fun BasicInfoStep(
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
                 unfocusedBorderColor = BorderDefault,
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                focusedContainerColor = BackgroundWhite,
+                unfocusedContainerColor = BackgroundWhite
             )
         )
         Box(
@@ -692,8 +692,8 @@ private fun BasicInfoStep(
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = PrimaryGreen,
             unfocusedBorderColor = BorderDefault,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White
+            focusedContainerColor = BackgroundWhite,
+            unfocusedContainerColor = BackgroundWhite
         ),
         maxLines = 4
     )
@@ -876,7 +876,7 @@ private fun DBUSelectorBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Color.White,
+        containerColor = BackgroundWhite,
         dragHandle = { BottomSheetDefaults.DragHandle(color = BorderDefault) }
     ) {
         Column(

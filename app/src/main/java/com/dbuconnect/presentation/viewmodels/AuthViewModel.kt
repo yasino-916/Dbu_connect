@@ -7,6 +7,7 @@ import com.dbuconnect.data.repository.AppRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import javax.inject.Inject
 
 data class AuthState(
@@ -88,7 +89,7 @@ class AuthViewModel @Inject constructor(
             result.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = error.message ?: "Login failed") }
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Login failed")) }
             }
         }
     }
@@ -132,7 +133,7 @@ class AuthViewModel @Inject constructor(
             result.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = error.message ?: "Sign up failed") }
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Sign up failed")) }
             }
         }
     }
@@ -159,9 +160,35 @@ class AuthViewModel @Inject constructor(
             signUpResult.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = error.message ?: "Google authentication failed") }
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Google authentication failed")) }
             }
         }
+    }
+
+    private fun getUserFriendlyErrorMessage(error: Throwable, defaultMessage: String): String {
+        if (error is HttpException) {
+            val code = error.code()
+            val errorBody = runCatching { error.response()?.errorBody()?.string() }.getOrNull()
+            
+            return when {
+                code == 400 && errorBody?.contains("Email not confirmed", ignoreCase = true) == true -> {
+                    "Your email has not been confirmed yet. Please verify your inbox."
+                }
+                code == 400 && (errorBody?.contains("already registered", ignoreCase = true) == true || 
+                               errorBody?.contains("user already exists", ignoreCase = true) == true) -> {
+                    "This email is already registered. Please sign in instead."
+                }
+                code == 400 -> {
+                    "Invalid email or password. Please verify your credentials and try again."
+                }
+                code == 401 -> "Unauthorized access. Please verify your credentials."
+                code == 403 -> "Access denied. Only registered students can sign in."
+                code == 404 -> "Server connection failed (404). Please try again."
+                code >= 500 -> "Server is currently offline. Please try again later."
+                else -> "Network error ($code). Please check your connection."
+            }
+        }
+        return error.message ?: defaultMessage
     }
 
     fun clearError() {

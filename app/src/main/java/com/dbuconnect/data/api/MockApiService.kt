@@ -283,6 +283,11 @@ class MockApiService @Inject constructor() : DBUApiService {
         )
     }
 
+    override suspend fun recoverPassword(email: String): Result<Unit> {
+        delay(500)
+        return Result.success(Unit)
+    }
+
     override suspend fun signUp(
         name: String,
         email: String,

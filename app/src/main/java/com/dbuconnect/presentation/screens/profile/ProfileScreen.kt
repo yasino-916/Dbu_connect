@@ -37,6 +37,7 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val isDark = isAppInDarkTheme
 
     var showNotificationDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -55,7 +56,7 @@ fun ProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundWhite)
             .verticalScroll(rememberScrollState())
             .systemBarsPadding()
     ) {
@@ -158,6 +159,47 @@ fun ProfileScreen(
                 onClick = { showAboutDialog = true }
             )
 
+            // Dark / Light Mode Toggle
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(12.dp),
+                color = BackgroundWhite,
+                border = BorderStroke(1.dp, BorderDefault)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (isDark) Icons.Outlined.DarkMode else Icons.Outlined.LightMode,
+                        contentDescription = null,
+                        tint = if (isDark) PrimaryGreenLight else TextSecondary,
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = if (isDark) "Dark Mode" else "Light Mode",
+                        fontSize = 16.sp,
+                        color = TextPrimary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = isDark,
+                        onCheckedChange = { ThemeManager.toggleDarkMode(context) },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = PrimaryGreen,
+                            uncheckedThumbColor = Color.White,
+                            uncheckedTrackColor = BorderDefault
+                        )
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             // Logout
@@ -193,7 +235,7 @@ private fun ProfileMenuItem(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        color = Color.White,
+        color = BackgroundWhite,
         border = BorderStroke(1.dp, BorderDefault)
     ) {
         Row(
@@ -227,7 +269,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundWhite)
             .systemBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
@@ -277,7 +319,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, BorderDefault),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -302,7 +344,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, BorderDefault),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 Column {
                     SettingsToggle(
@@ -328,7 +370,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, BorderDefault),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -352,7 +394,7 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, BorderDefault),
-                color = Color.White
+                color = BackgroundWhite
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -511,7 +553,7 @@ private fun NotificationPreferencesDialog(
                 Text("Save", color = PrimaryGreen, fontWeight = FontWeight.Bold)
             }
         },
-        containerColor = Color.White,
+        containerColor = BackgroundWhite,
         shape = RoundedCornerShape(16.dp)
     )
 }
@@ -670,7 +712,7 @@ private fun HelpSupportDialog(
                 Text("Close", color = TextSecondary)
             }
         },
-        containerColor = Color.White,
+        containerColor = BackgroundWhite,
         shape = RoundedCornerShape(16.dp)
     )
 }
@@ -743,7 +785,7 @@ private fun AboutDbuConnectDialog(
                 Text("Close", color = PrimaryGreen, fontWeight = FontWeight.Bold)
             }
         },
-        containerColor = Color.White,
+        containerColor = BackgroundWhite,
         shape = RoundedCornerShape(16.dp)
     )
 }
