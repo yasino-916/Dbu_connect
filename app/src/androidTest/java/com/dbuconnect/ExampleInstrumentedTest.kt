@@ -1,4 +1,4 @@
-package com.example.dbu_connect1
+package com.dbuconnect
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

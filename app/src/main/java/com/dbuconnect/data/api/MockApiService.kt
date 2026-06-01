@@ -9,82 +9,199 @@ import javax.inject.Singleton
 @Singleton
 class MockApiService @Inject constructor() : DBUApiService {
 
-    private val departments = listOf(
-        "Computer Science", "Electrical Engineering", "Civil Engineering",
-        "Business Administration", "Medicine", "Law", "Architecture",
-        "Chemistry", "Physics", "Mathematics", "Biology", "Psychology"
-    )
-
-    private val interestsList = listOf(
-        "Coffee", "Sports", "Music", "Reading", "Photography", "Cooking",
-        "Travel", "Gaming", "Art", "Volunteering", "Studying", "Movies",
-        "Dancing", "Fitness", "Technology", "Writing", "Nature", "Debate"
-    )
-
-    private val names = listOf(
-        "Abigail T.", "Bethlehem K.", "Daniel M.", "Eden S.", "Fikir A.",
-        "Gelila B.", "Hanna W.", "Isaac D.", "Jerusalem N.", "Kidist L.",
-        "Liya M.", "Meron G.", "Nahom T.", "Olana B.", "Ruth H.",
-        "Samuel A.", "Tigist F.", "Yared K.", "Zara D.", "Abel S."
-    )
-
-    private val photoUrls = listOf(
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400",
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400",
-        "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
-        "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400",
-        "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400"
-    )
-
-    private val mockProfiles = (0 until 20).map { i ->
+    private val mockProfiles = listOf(
         ProfileCard(
-            id = "card_$i",
-            userId = "user_$i",
-            photoUrl = photoUrls[i % photoUrls.size],
-            name = names[i % names.size],
-            age = (18..26).random(),
-            department = departments[i % departments.size],
-            year = (1..5).random(),
-            interests = interestsList.shuffled().take((2..5).random()),
-            distance = (0.1f..5.0f).random(),
-            bio = "Hey! I love meeting new people on campus.",
-            intent = listOf("Friends", "Dating", "Study Buddy").random()
+            id = "card_0",
+            userId = "user_0",
+            photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
+            name = "Gelila Birhanu",
+            age = 21,
+            department = "Medicine (MBBS)",
+            year = 3,
+            interests = listOf("Music", "Fitness", "Reading", "Coffee"),
+            distance = 0.8f,
+            bio = "Medical student at Asrat Woldeyes campus. Usually at the library studying or listening to classic music. Let's grab hot tea to survive the chilly Debre Berhan weather!",
+            intent = "Friends"
+        ),
+        ProfileCard(
+            id = "card_1",
+            userId = "user_1",
+            photoUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            name = "Abel Tekle",
+            age = 22,
+            department = "Software Engineering",
+            year = 4,
+            interests = listOf("Technology", "Coffee", "Gaming", "Studying"),
+            distance = 1.2f,
+            bio = "Software Engineering senior. Usually coding at the Computing Lab or finding the best Macchiato spot on campus. Let's team up for final projects!",
+            intent = "Study Buddy"
+        ),
+        ProfileCard(
+            id = "card_2",
+            userId = "user_2",
+            photoUrl = "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400",
+            name = "Bethlehem Kassahun",
+            age = 20,
+            department = "Accounting and Finance",
+            year = 2,
+            interests = listOf("Reading", "Photography", "Art", "Travel"),
+            distance = 0.5f,
+            bio = "Sophomore studying Accounting. Love reading Ethiopian fiction and photography. Let's find beautiful spots around DBU to take cool pictures!",
+            intent = "Friends"
+        ),
+        ProfileCard(
+            id = "card_3",
+            userId = "user_3",
+            photoUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+            name = "Naod Kassahun",
+            age = 23,
+            department = "Civil Engineering",
+            year = 5,
+            interests = listOf("Sports", "Coffee", "Travel", "Movies"),
+            distance = 2.1f,
+            bio = "Civil Engineering graduating student. Passionate about structural design. Love football, hiking around the beautiful Debre Berhan hills, and deep conversations.",
+            intent = "Dating"
+        ),
+        ProfileCard(
+            id = "card_4",
+            userId = "user_4",
+            photoUrl = "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400",
+            name = "Senait Hailu",
+            age = 22,
+            department = "Law (LLB)",
+            year = 4,
+            interests = listOf("Volunteering", "Reading", "Debate", "Studying"),
+            distance = 1.5f,
+            bio = "Future lawyer. Love debating, volunteering, and learning about human rights. Looking for friends who enjoy good books and warm tea on campus.",
+            intent = "Friends"
+        ),
+        ProfileCard(
+            id = "card_5",
+            userId = "user_5",
+            photoUrl = "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400",
+            name = "Kirubel Worku",
+            age = 21,
+            department = "Computer Science",
+            year = 3,
+            interests = listOf("Technology", "Coffee", "Debate", "Gaming"),
+            distance = 0.9f,
+            bio = "Computer Science junior. Building dynamic mobile apps. Let's debate about tech or find the best spots to grab a snack near DBU main gate!",
+            intent = "Study Buddy"
+        ),
+        ProfileCard(
+            id = "card_6",
+            userId = "user_6",
+            photoUrl = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
+            name = "Kidist Lemma",
+            age = 20,
+            department = "Environmental Science",
+            year = 2,
+            interests = listOf("Nature", "Volunteering", "Travel", "Movies"),
+            distance = 1.1f,
+            bio = "Nature lover studying Environmental Science. Passionate about green campus initiatives. Let's hang out near the DBU main quad or plant some trees!",
+            intent = "Friends"
+        ),
+        ProfileCard(
+            id = "card_7",
+            userId = "user_7",
+            photoUrl = "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+            name = "Yared Kassaye",
+            age = 22,
+            department = "Mechanical Engineering",
+            year = 4,
+            interests = listOf("Sports", "Music", "Fitness", "Nature"),
+            distance = 1.7f,
+            bio = "Mechanical Engineering senior. Loves sports, playing acoustic guitar, and fitness. Always up for an outdoor running session in the cold DB morning air!",
+            intent = "Dating"
+        ),
+        ProfileCard(
+            id = "card_8",
+            userId = "user_8",
+            photoUrl = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400",
+            name = "Eyerusalem Negash",
+            age = 21,
+            department = "Pharmacy",
+            year = 4,
+            interests = listOf("Music", "Cooking", "Studying", "Coffee"),
+            distance = 0.6f,
+            bio = "Pharmacy student. Almost done! Love baking, listening to classic Ethiopian music, and chatting about healthcare. Let's be friends!",
+            intent = "Study Buddy"
+        ),
+        ProfileCard(
+            id = "card_9",
+            userId = "user_9",
+            photoUrl = "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=400",
+            name = "Mikias Solomon",
+            age = 21,
+            department = "Economics",
+            year = 3,
+            interests = listOf("Gaming", "Movies", "Sports", "Coffee"),
+            distance = 1.4f,
+            bio = "Economics junior. Let's talk about finance, watch action movies, or play a quick FIFA match. Looking for chill friends around DBU!",
+            intent = "Friends"
         )
-    }
+    )
 
-    private val mockMatches = (0 until 8).map { i ->
+    private val mockMatches = listOf(
         Match(
-            id = "match_$i",
+            id = "match_0",
             userAId = "current_user",
-            userBId = "user_$i",
-            userName = names[i % names.size],
-            userPhotoUrl = photoUrls[i % photoUrls.size],
-            createdAt = System.currentTimeMillis() - (i * 3600000L),
-            isNew = i < 4,
-            lastMessage = if (i < 5) listOf(
-                "Hey! Are you going to the campus event?",
-                "It was good! Yours?",
-                "Hey! How was your day?",
-                "Meet at library?",
-                "Coffee soon?"
-            )[i % 5] else null,
-            lastMessageTime = if (i < 5) System.currentTimeMillis() - (i * 1800000L) else null,
-            unreadCount = if (i < 3) (1..6).random() else 0,
-            isOnline = i % 2 == 0
+            userBId = "user_0",
+            userName = "Gelila Birhanu",
+            userPhotoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400",
+            createdAt = System.currentTimeMillis() - 3600000L,
+            isNew = true,
+            lastMessage = "It was good! Yours?",
+            lastMessageTime = System.currentTimeMillis() - 1800000L,
+            unreadCount = 2,
+            isOnline = true
+        ),
+        Match(
+            id = "match_1",
+            userAId = "current_user",
+            userBId = "user_1",
+            userName = "Abel Tekle",
+            userPhotoUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+            createdAt = System.currentTimeMillis() - 7200000L,
+            isNew = true,
+            lastMessage = "Hey! Are you going to the campus event?",
+            lastMessageTime = System.currentTimeMillis() - 3600000L,
+            unreadCount = 1,
+            isOnline = true
+        ),
+        Match(
+            id = "match_2",
+            userAId = "current_user",
+            userBId = "user_2",
+            userName = "Bethlehem Kassahun",
+            userPhotoUrl = "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400",
+            createdAt = System.currentTimeMillis() - 10800000L,
+            isNew = false,
+            lastMessage = "Meet at the main library?",
+            lastMessageTime = System.currentTimeMillis() - 5400000L,
+            unreadCount = 0,
+            isOnline = false
+        ),
+        Match(
+            id = "match_3",
+            userAId = "current_user",
+            userBId = "user_3",
+            userName = "Naod Kassahun",
+            userPhotoUrl = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+            createdAt = System.currentTimeMillis() - 14400000L,
+            isNew = false,
+            lastMessage = "Coffee soon?",
+            lastMessageTime = System.currentTimeMillis() - 7200000L,
+            unreadCount = 0,
+            isOnline = true
         )
-    }
+    )
 
     private val mockMessages = listOf(
-        Message("msg_1", "match_0", "current_user", "Hey! How was your day?", System.currentTimeMillis() - 600000, MessageStatus.READ),
+        Message("msg_1", "match_0", "current_user", "Hey Gelila! How was your clinic practice today?", System.currentTimeMillis() - 600000, MessageStatus.READ),
         Message("msg_2", "match_0", "user_0", "It was good! Yours?", System.currentTimeMillis() - 540000, MessageStatus.READ),
-        Message("msg_3", "match_0", "current_user", "Hey! How was your day?", System.currentTimeMillis() - 480000, MessageStatus.READ),
-        Message("msg_4", "match_0", "user_0", "It was good! Yours?", System.currentTimeMillis() - 420000, MessageStatus.READ),
-        Message("msg_5", "match_0", "current_user", "Hey! How was your day?", System.currentTimeMillis() - 360000, MessageStatus.SENT),
-        Message("msg_6", "match_0", "user_0", "Meet at library?", System.currentTimeMillis() - 300000, MessageStatus.READ),
-        Message("msg_7", "match_0", "current_user", "Hey! How was your day?", System.currentTimeMillis() - 240000, MessageStatus.SENT)
+        Message("msg_3", "match_1", "user_1", "Hey! Are you going to the campus event?", System.currentTimeMillis() - 480000, MessageStatus.READ),
+        Message("msg_4", "match_1", "current_user", "Yeah, I will be there in 10 minutes.", System.currentTimeMillis() - 420000, MessageStatus.READ)
     )
 
     private var mockEvents = listOf(
@@ -145,9 +262,9 @@ class MockApiService @Inject constructor() : DBUApiService {
 
     override suspend fun login(email: String, password: String): Result<User> {
         delay(1200)
-        
+
         val isAdmin = email.lowercase() == "admin@dbu.edu.et"
-        
+
         return Result.success(
             User(
                 id = if (isAdmin) "admin_user" else "current_user",
@@ -156,7 +273,7 @@ class MockApiService @Inject constructor() : DBUApiService {
                 department = "Computer Science",
                 year = 3,
                 bio = if (isAdmin) "DBU Connect Administrator" else "Love coding and campus life!",
-                photos = listOf(photoUrls[0]),
+                photos = listOf("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"),
                 interests = listOf("Coffee", "Sports", "Music", "Studying", "Volunteering"),
                 intent = "Friends",
                 email = email,
@@ -194,7 +311,12 @@ class MockApiService @Inject constructor() : DBUApiService {
 
     override suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>> {
         delay(800)
-        return Result.success(mockProfiles)
+        val filtered = mockProfiles.filter { profile ->
+            (filters.intent.isBlank() || profile.intent == filters.intent) &&
+            (filters.departments.isEmpty() || profile.department in filters.departments) &&
+            (profile.year in filters.yearRange)
+        }
+        return Result.success(filtered)
     }
 
     override suspend fun likeProfile(userId: String): Result<Match?> {
@@ -271,6 +393,16 @@ class MockApiService @Inject constructor() : DBUApiService {
     }
 
     override suspend fun updatePrivacy(settings: PrivacySettings): Result<Unit> {
+        delay(300)
+        return Result.success(Unit)
+    }
+
+    override suspend fun reportUser(userId: String, reason: String, details: String): Result<Unit> {
+        delay(300)
+        return Result.success(Unit)
+    }
+
+    override suspend fun blockUser(userId: String): Result<Unit> {
         delay(300)
         return Result.success(Unit)
     }

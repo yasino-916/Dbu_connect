@@ -22,12 +22,25 @@ import com.dbuconnect.presentation.components.PrimaryButton
 import com.dbuconnect.presentation.components.SecondaryButton
 import com.dbuconnect.presentation.theme.*
 
+/**
+ * Issue #13: matchName, matchPhotoUrl, and currentUserPhotoUrl are now parameters
+ * so the NavHost can pass the real matched user's data from the match object.
+ */
 @Composable
 fun MatchSuccessScreen(
-    matchName: String = "Sarah",
+    matchName: String = "Someone",
+    matchPhotoUrl: String = "",
+    currentUserPhotoUrl: String = "",
     onSendMessage: () -> Unit,
     onKeepBrowsing: () -> Unit
 ) {
+    val matchPhoto = matchPhotoUrl.ifBlank {
+        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200"
+    }
+    val userPhoto = currentUserPhotoUrl.ifBlank {
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -46,9 +59,9 @@ fun MatchSuccessScreen(
                 modifier = Modifier.size(200.dp),
                 contentAlignment = Alignment.Center
             ) {
-                // Left photo
+                // Left photo (current user)
                 AsyncImage(
-                    model = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200",
+                    model = userPhoto,
                     contentDescription = "Your photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -58,9 +71,9 @@ fun MatchSuccessScreen(
                         .border(3.dp, Color.White, CircleShape)
                 )
 
-                // Right photo
+                // Right photo (matched user)
                 AsyncImage(
-                    model = "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200",
+                    model = matchPhoto,
                     contentDescription = "$matchName's photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

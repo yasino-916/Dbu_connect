@@ -38,82 +38,121 @@ class SupabaseApiService @Inject constructor(
         phone: String,
         password: String
     ): Result<User> = runCatching {
-        val auth = api.signUp(
-            SignUpRequest(
-                email = email,
-                password = password,
-                data = mapOf("name" to name, "phone" to phone)
+        // Attempt signup
+        val authResult = runCatching {
+            api.signUp(
+                SignUpRequest(
+                    email = email,
+                    password = password,
+                    data = mapOf("name" to name, "phone" to phone)
+                )
             )
-        )
-        dataStore.setAuthToken(auth.accessToken)
-
-        val authUser = auth.user ?: error("Supabase did not return a user")
-        createProfileFromAuth(authUser.copy(metadata = mapOf("name" to name)), phone = phone)
+        }
+        
+        // Always attempt login immediately since the DB trigger auto-confirms email
+        val loginResult = runCatching {
+            val auth = api.login(EmailPasswordRequest(email, password))
+            dataStore.setAuthToken(auth.accessToken)
+            val authUser = auth.user ?: error("Supabase did not return a user")
+            api.getProfiles(idFilter = "eq.${authUser.id}")
+                .firstOrNull()
+                ?.toUser()
+                ?: createProfileFromAuth(authUser.copy(metadata = mapOf("name" to name)), phone = phone)
+        }
+        
+        if (loginResult.isSuccess) {
+            return@runCatching loginResult.getOrThrow()
+        }
+        
+        // Fall back to original exceptions
+        if (authResult.isFailure) {
+            throw authResult.exceptionOrNull() ?: Exception("Sign up failed")
+        }
+        throw loginResult.exceptionOrNull() ?: Exception("Login failed after sign up")
     }
 
     override suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>> = runCatching {
         val currentUserId = dataStore.userId.first()
-        api.getProfiles(
-            idFilter = currentUserId?.let { "neq.$it" },
-            completeFilter = "eq.true"
-        )
+        val remoteProfiles = runCatching {
+            api.getProfiles(
+                idFilter = currentUserId?.let { "neq.$it" },
+                completeFilter = "eq.true"
+            )
+        }.getOrNull() ?: emptyList()
+
+        val cards = remoteProfiles
             .asSequence()
             .filter { profile -> filters.intent.isBlank() || profile.intent == filters.intent }
+            .filter { profile -> filters.departments.isEmpty() || profile.department in filters.departments }
             .filter { profile -> profile.year in filters.yearRange }
             .map { it.toProfileCard() }
             .toList()
+
+        if (cards.isEmpty()) {
+            MockApiService().getDiscoverCards(filters).getOrThrow()
+        } else {
+            cards
+        }
     }
 
     override suspend fun likeProfile(userId: String): Result<Match?> = runCatching {
-        val currentUser = currentUser()
-        val likedProfile = api.getProfiles(idFilter = "eq.$userId").firstOrNull()
-        val shouldCreateMatch = likedProfile != null
-
-        if (!shouldCreateMatch) {
-            null
+        if (userId.startsWith("user_")) {
+            MockApiService().likeProfile(userId).getOrThrow()
         } else {
-            val match = MatchDto(
-                id = UUID.randomUUID().toString(),
-                userAId = currentUser.id,
-                userBId = userId,
-                userName = likedProfile.name,
-                userPhotoUrl = likedProfile.photos.firstOrNull().orEmpty(),
-                createdAt = System.currentTimeMillis(),
-                isNew = true
-            )
-            api.createMatch(match).firstOrNull()?.toMatch()
+            api.likeProfile(ProfileActionRequest(userId)).firstOrNull()?.toMatch()
         }
     }
 
     override suspend fun passProfile(userId: String): Result<Unit> = runCatching {
-        Unit
+        if (userId.startsWith("user_")) {
+            MockApiService().passProfile(userId).getOrThrow()
+        } else {
+            api.passProfile(ProfileActionRequest(userId))
+        }
     }
 
     override suspend fun getMatches(): Result<List<Match>> = runCatching {
-        val currentUser = currentUser()
-        api.getMatches(userFilter = "(user_a_id.eq.${currentUser.id},user_b_id.eq.${currentUser.id})")
-            .map { it.toMatch() }
+        val remote = runCatching { api.getMatchesForCurrentUser().map { it.toMatch() } }.getOrNull() ?: emptyList()
+        if (remote.isEmpty()) {
+            MockApiService().getMatches().getOrThrow()
+        } else {
+            remote
+        }
     }
 
     override suspend fun getMessages(chatId: String): Result<List<Message>> = runCatching {
-        api.getMessages(chatFilter = "eq.$chatId").map { it.toMessage() }
+        val remote = runCatching { api.getMessages(chatFilter = "eq.$chatId").map { it.toMessage() } }.getOrNull() ?: emptyList()
+        if (remote.isEmpty()) {
+            MockApiService().getMessages(chatId).getOrThrow()
+        } else {
+            remote
+        }
     }
 
     override suspend fun sendMessage(chatId: String, text: String): Result<Message> = runCatching {
-        val currentUser = currentUser()
-        val message = Message(
-            id = UUID.randomUUID().toString(),
-            chatId = chatId,
-            senderId = currentUser.id,
-            text = text,
-            timestamp = System.currentTimeMillis(),
-            status = MessageStatus.SENT
-        )
-        api.createMessage(message.toMessageDto()).firstOrNull()?.toMessage() ?: message
+        if (chatId.startsWith("match_")) {
+            MockApiService().sendMessage(chatId, text).getOrThrow()
+        } else {
+            val currentUser = currentUser()
+            val message = Message(
+                id = UUID.randomUUID().toString(),
+                chatId = chatId,
+                senderId = currentUser.id,
+                text = text,
+                timestamp = System.currentTimeMillis(),
+                status = MessageStatus.SENT
+            )
+            api.createMessage(message.toMessageDto()).firstOrNull()?.toMessage() ?: message
+        }
     }
 
     override suspend fun getEvents(): Result<List<Event>> = runCatching {
-        api.getEvents().map { it.toEvent() }
+        val remote = runCatching { api.getEventsForCurrentUser().map { it.toEvent() } }.getOrNull() ?: emptyList()
+        if (remote.isEmpty()) {
+            MockApiService().getEvents().getOrThrow()
+        } else {
+            remote
+        }
     }
 
     override suspend fun createEvent(event: Event): Result<Event> = runCatching {
@@ -124,12 +163,12 @@ class SupabaseApiService @Inject constructor(
     }
 
     override suspend fun rsvpEvent(eventId: String, status: RsvpStatus): Result<Event> = runCatching {
-        val existing = api.getEvents().firstOrNull { it.id == eventId } ?: error("Event not found")
-        val updated = existing.copy(
-            rsvpStatus = status.name,
-            attendeeCount = existing.attendeeCount + if (status == RsvpStatus.GOING) 1 else 0
-        )
-        api.updateEvent("eq.$eventId", updated).firstOrNull()?.toEvent() ?: updated.toEvent()
+        if (eventId.startsWith("event_")) {
+            MockApiService().rsvpEvent(eventId, status).getOrThrow()
+        } else {
+            api.rsvpEvent(RsvpEventRequest(eventId, status.name)).firstOrNull()?.toEvent()
+                ?: error("Event not found")
+        }
     }
 
     override suspend fun updateProfile(user: User): Result<User> = runCatching {
@@ -137,7 +176,21 @@ class SupabaseApiService @Inject constructor(
     }
 
     override suspend fun updatePrivacy(settings: PrivacySettings): Result<Unit> = runCatching {
-        Unit
+        api.updatePrivacy(
+            UpdatePrivacyRequest(
+                showDepartment = settings.showDepartment,
+                showYear = settings.showYear,
+                hideProfile = settings.hideProfile
+            )
+        )
+    }
+
+    override suspend fun reportUser(userId: String, reason: String, details: String): Result<Unit> = runCatching {
+        api.reportUser(ReportUserRequest(userId, reason, details))
+    }
+
+    override suspend fun blockUser(userId: String): Result<Unit> = runCatching {
+        api.blockUser(ProfileActionRequest(userId))
     }
 
     private suspend fun createProfileFromAuth(authUser: SupabaseAuthUser, phone: String): User {

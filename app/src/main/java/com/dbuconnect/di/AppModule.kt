@@ -34,7 +34,10 @@ object AppModule {
             context,
             DBUDatabase::class.java,
             "dbu_connect_db"
-        ).fallbackToDestructiveMigration().build()
+        )
+            // Issue #23: Use explicit migrations instead of destructive fallback
+            .addMigrations(DBUDatabase.MIGRATION_1_2)
+            .build()
     }
 
     @Provides
@@ -52,6 +55,9 @@ object AppModule {
     @Provides
     fun provideEventDao(db: DBUDatabase): EventDao = db.eventDao()
 
+    @Volatile
+    private var cachedToken: String? = null
+
     @Provides
     @Singleton
     fun provideSupabaseOkHttpClient(dataStore: AppDataStore): OkHttpClient {
@@ -61,13 +67,21 @@ object AppModule {
 
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
-                val token = runBlocking { dataStore.authToken.first() }
+                // Only refresh the token if we don't have one cached
+                val token = cachedToken ?: runBlocking {
+                    dataStore.authToken.first().also { cachedToken = it }
+                }
                 val bearer = token ?: SupabaseConfig.anonKey
                 val request = chain.request().newBuilder()
                     .addHeader("apikey", SupabaseConfig.anonKey)
                     .addHeader("Authorization", "Bearer $bearer")
                     .build()
-                chain.proceed(request)
+                val response = chain.proceed(request)
+                // If we get 401, invalidate cache so next request fetches fresh token
+                if (response.code == 401) {
+                    cachedToken = null
+                }
+                response
             }
             .addInterceptor(logging)
             .build()

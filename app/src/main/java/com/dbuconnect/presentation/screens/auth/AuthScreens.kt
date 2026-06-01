@@ -29,15 +29,18 @@ import com.dbuconnect.presentation.viewmodels.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (isProfileComplete: Boolean) -> Unit,
     onNavigateToSignUp: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.isLoggedIn) {
-        if (state.isLoggedIn) onLoginSuccess()
+    LaunchedEffect(state.isLoggedIn, state.user?.isProfileComplete) {
+        val user = state.user
+        if (state.isLoggedIn && user != null) {
+            onLoginSuccess(user.isProfileComplete)
+        }
     }
 
     Column(
@@ -45,6 +48,7 @@ fun LoginScreen(
             .fillMaxSize()
             .background(Color.White)
             .systemBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
     ) {
@@ -176,26 +180,6 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Divider
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            HorizontalDivider(modifier = Modifier.weight(1f), color = BorderDefault)
-            Text(
-                text = "  or  ",
-                fontSize = 14.sp,
-                color = TextSecondary
-            )
-            HorizontalDivider(modifier = Modifier.weight(1f), color = BorderDefault)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        GoogleButton(onClick = { viewModel.login() })
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         Text(
             text = "By continuing, you agree to our Terms and Privacy Policy.",
             fontSize = 13.sp,
@@ -246,6 +230,7 @@ fun SignUpScreen(
             .fillMaxSize()
             .background(BackgroundPrimary)
             .systemBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
     ) {
         // Top bar
@@ -389,31 +374,12 @@ fun SignUpScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     PrimaryButton(
-                        text = "Create Account  →",
+                        text = "Create Account",
                         onClick = { viewModel.signUp() },
                         isLoading = state.isLoading
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Divider
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = BorderDefault)
-                Text("  OR  ", fontSize = 14.sp, color = TextSecondary)
-                HorizontalDivider(modifier = Modifier.weight(1f), color = BorderDefault)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            GoogleButton(
-                text = "Sign up with Google",
-                onClick = { viewModel.signUp() }
-            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -481,3 +447,4 @@ private fun FormField(
         singleLine = true
     )
 }
+

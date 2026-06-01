@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -36,8 +37,19 @@ fun ProfileScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    val showComingSoon: (String) -> Unit = { feature ->
-        Toast.makeText(context, "$feature is coming soon", Toast.LENGTH_SHORT).show()
+
+    var showNotificationDialog by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
+
+    if (showNotificationDialog) {
+        NotificationPreferencesDialog(onDismiss = { showNotificationDialog = false })
+    }
+    if (showHelpDialog) {
+        HelpSupportDialog(onDismiss = { showHelpDialog = false })
+    }
+    if (showAboutDialog) {
+        AboutDbuConnectDialog(onDismiss = { showAboutDialog = false })
     }
 
     Column(
@@ -131,19 +143,19 @@ fun ProfileScreen(
             ProfileMenuItem(
                 icon = Icons.Outlined.Notifications,
                 title = "Notification Preferences",
-                onClick = { showComingSoon("Notification preferences") }
+                onClick = { showNotificationDialog = true }
             )
 
             ProfileMenuItem(
                 icon = Icons.Outlined.Help,
                 title = "Help & Support",
-                onClick = { showComingSoon("Help and support") }
+                onClick = { showHelpDialog = true }
             )
 
             ProfileMenuItem(
                 icon = Icons.Outlined.Info,
                 title = "About DBU Connect",
-                onClick = { showComingSoon("About DBU Connect") }
+                onClick = { showAboutDialog = true }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -219,7 +231,20 @@ fun SettingsScreen(
             .systemBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
+        // Top bar with back button
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Outlined.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Header
         Column(
@@ -394,4 +419,331 @@ private fun SettingsToggle(
             )
         )
     }
+}
+
+// ──────────────────── Dialogs ────────────────────
+
+@Composable
+private fun NotificationToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text(text = description, fontSize = 12.sp, color = TextSecondary)
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = Color.White,
+                checkedTrackColor = PrimaryGreen,
+                uncheckedThumbColor = Color.White,
+                uncheckedTrackColor = BorderDefault
+            )
+        )
+    }
+}
+
+@Composable
+private fun NotificationPreferencesDialog(
+    onDismiss: () -> Unit
+) {
+    var directMessages by remember { mutableStateOf(true) }
+    var newMatches by remember { mutableStateOf(true) }
+    var eventInvites by remember { mutableStateOf(true) }
+    var likesActivity by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Notification Preferences",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                NotificationToggleRow(
+                    title = "Direct Messages",
+                    description = "Get notified when someone sends you a message",
+                    checked = directMessages,
+                    onCheckedChange = { directMessages = it }
+                )
+                NotificationToggleRow(
+                    title = "New Matches",
+                    description = "Get notified when you get a mutual match",
+                    checked = newMatches,
+                    onCheckedChange = { newMatches = it }
+                )
+                NotificationToggleRow(
+                    title = "Event Invitations",
+                    description = "Get notified about campus events and RSVPs",
+                    checked = eventInvites,
+                    onCheckedChange = { eventInvites = it }
+                )
+                NotificationToggleRow(
+                    title = "Likes & Views",
+                    description = "Get notified when someone likes your profile",
+                    checked = likesActivity,
+                    onCheckedChange = { likesActivity = it }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Save", color = PrimaryGreen, fontWeight = FontWeight.Bold)
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun HelpSupportDialog(
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    var feedbackText by remember { mutableStateOf("") }
+    var expandedFaqIndex by remember { mutableIntStateOf(-1) }
+
+    val faqs = listOf(
+        "How do matches work?" to "Mutual matching occurs when both you and another student pass/like each other's profiles. You can then chat in the Matches tab.",
+        "Can I hide my profile?" to "Yes! Go to the Privacy Center from your profile home page and toggle 'Hide Profile'. You won't appear in Discover, but you can still message existing matches.",
+        "How can I report a user?" to "To report someone, tap the three dots in the top-right corner of their profile or chat screen and select Report, or email us at support@dbu.edu.et."
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Help & Support",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            )
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // FAQs Section
+                Text(
+                    text = "Frequently Asked Questions",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryGreen
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    faqs.forEachIndexed { index, (question, answer) ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    expandedFaqIndex = if (expandedFaqIndex == index) -1 else index
+                                },
+                            colors = CardDefaults.cardColors(containerColor = SurfaceMuted),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = question,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = TextPrimary,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Icon(
+                                        imageVector = if (expandedFaqIndex == index) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                                        contentDescription = null,
+                                        tint = TextSecondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                if (expandedFaqIndex == index) {
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    Text(
+                                        text = answer,
+                                        fontSize = 12.sp,
+                                        color = TextSecondary,
+                                        lineHeight = 16.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                HorizontalDivider(color = BorderDefault)
+
+                // Contact Section
+                Text(
+                    text = "Contact Support",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryGreen
+                )
+
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Email, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "support@dbu.edu.et", fontSize = 13.sp, color = TextPrimary)
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.Phone, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = "+251 11 284 7799", fontSize = 13.sp, color = TextPrimary)
+                    }
+                }
+
+                HorizontalDivider(color = BorderDefault)
+
+                // Send Feedback Section
+                Text(
+                    text = "Send Us Feedback",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = PrimaryGreen
+                )
+
+                OutlinedTextField(
+                    value = feedbackText,
+                    onValueChange = { feedbackText = it },
+                    placeholder = { Text("Tell us how we can improve...", fontSize = 12.sp, color = TextTertiary) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp),
+                    shape = RoundedCornerShape(8.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryGreen,
+                        unfocusedBorderColor = BorderDefault
+                    )
+                )
+
+                Button(
+                    onClick = {
+                        if (feedbackText.isNotBlank()) {
+                            Toast.makeText(context, "Thank you for your feedback!", Toast.LENGTH_SHORT).show()
+                            feedbackText = ""
+                            onDismiss()
+                        }
+                    },
+                    enabled = feedbackText.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text("Submit Feedback", color = Color.White)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = TextSecondary)
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
+@Composable
+private fun AboutDbuConnectDialog(
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                DBULogo()
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "DBU Connect",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Text(
+                    text = "Version 1.0.0 (Stable)",
+                    fontSize = 12.sp,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "DBU Connect is the official social connection, matchmaking, and event discovery platform designed specifically for students of Debre Berhan University. Securely verified via university email, the platform enables students to safely network, find study groups, join campus activities, and build meaningful peer-to-peer connections.",
+                    fontSize = 13.sp,
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 18.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = PrimaryGreenContainer),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "Built securely with Supabase & Kotlin",
+                        fontSize = 12.sp,
+                        color = PrimaryGreen,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "© 2026 Debre Berhan University.\nAll rights reserved.",
+                    fontSize = 11.sp,
+                    color = TextTertiary,
+                    textAlign = TextAlign.Center
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = PrimaryGreen, fontWeight = FontWeight.Bold)
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
 }

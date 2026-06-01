@@ -1,5 +1,6 @@
 package com.dbuconnect.presentation.screens.chat
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +38,7 @@ fun ChatScreen(
     val state by viewModel.state.collectAsState()
     val messages by viewModel.messages.collectAsState()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
 
     val quickPrompts = listOf("Coffee soon?", "Study together?", "Meet at library?")
@@ -43,6 +46,14 @@ fun ChatScreen(
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
             listState.animateScrollToItem(messages.size - 1)
+        }
+    }
+
+    LaunchedEffect(state.actionMessage, state.error) {
+        val message = state.actionMessage ?: state.error
+        if (message != null) {
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            viewModel.clearTransientMessages()
         }
     }
 
@@ -84,12 +95,18 @@ fun ChatScreen(
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Report") },
-                                onClick = { showMenu = false },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.reportMatch()
+                                },
                                 leadingIcon = { Icon(Icons.Outlined.Flag, contentDescription = null) }
                             )
                             DropdownMenuItem(
                                 text = { Text("Block") },
-                                onClick = { showMenu = false },
+                                onClick = {
+                                    showMenu = false
+                                    viewModel.blockMatch()
+                                },
                                 leadingIcon = { Icon(Icons.Outlined.Block, contentDescription = null) }
                             )
                         }
@@ -190,7 +207,10 @@ fun ChatScreen(
                 contentPadding = PaddingValues(vertical = 8.dp)
             ) {
                 items(messages) { message ->
-                    MessageBubble(message = message)
+                    MessageBubble(
+                        message = message,
+                        currentUserId = state.currentUserId
+                    )
                 }
             }
         }
@@ -198,8 +218,8 @@ fun ChatScreen(
 }
 
 @Composable
-private fun MessageBubble(message: Message) {
-    val isMe = message.senderId == "current_user"
+private fun MessageBubble(message: Message, currentUserId: String) {
+    val isMe = message.senderId == currentUserId || message.senderId == "current_user"
 
     Row(
         modifier = Modifier.fillMaxWidth(),

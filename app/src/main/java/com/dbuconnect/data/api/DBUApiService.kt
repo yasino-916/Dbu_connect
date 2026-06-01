@@ -16,4 +16,6 @@ interface DBUApiService {
     suspend fun rsvpEvent(eventId: String, status: RsvpStatus): Result<Event>
     suspend fun updateProfile(user: User): Result<User>
     suspend fun updatePrivacy(settings: PrivacySettings): Result<Unit>
+    suspend fun reportUser(userId: String, reason: String, details: String = ""): Result<Unit>
+    suspend fun blockUser(userId: String): Result<Unit>
 }

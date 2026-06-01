@@ -32,11 +32,8 @@ interface SupabaseRestApi {
         @Body profile: ProfileDto
     ): List<ProfileDto>
 
-    @GET("rest/v1/events")
-    suspend fun getEvents(
-        @Query("select") select: String = "*",
-        @Query("order") order: String = "date_time.asc"
-    ): List<EventDto>
+    @POST("rest/v1/rpc/get_events_for_current_user")
+    suspend fun getEventsForCurrentUser(@Body request: EmptyRequest = EmptyRequest()): List<EventDto>
 
     @Headers("Prefer: return=representation")
     @POST("rest/v1/events")
@@ -49,16 +46,26 @@ interface SupabaseRestApi {
         @Body event: EventDto
     ): List<EventDto>
 
-    @GET("rest/v1/matches")
-    suspend fun getMatches(
-        @Query("select") select: String = "*",
-        @Query("or") userFilter: String,
-        @Query("order") order: String = "created_at.desc"
-    ): List<MatchDto>
+    @POST("rest/v1/rpc/get_matches_for_current_user")
+    suspend fun getMatchesForCurrentUser(@Body request: EmptyRequest = EmptyRequest()): List<MatchDto>
 
-    @Headers("Prefer: return=representation")
-    @POST("rest/v1/matches")
-    suspend fun createMatch(@Body match: MatchDto): List<MatchDto>
+    @POST("rest/v1/rpc/like_profile")
+    suspend fun likeProfile(@Body request: ProfileActionRequest): List<MatchDto>
+
+    @POST("rest/v1/rpc/pass_profile")
+    suspend fun passProfile(@Body request: ProfileActionRequest)
+
+    @POST("rest/v1/rpc/update_privacy_settings")
+    suspend fun updatePrivacy(@Body request: UpdatePrivacyRequest)
+
+    @POST("rest/v1/rpc/rsvp_event")
+    suspend fun rsvpEvent(@Body request: RsvpEventRequest): List<EventDto>
+
+    @POST("rest/v1/rpc/block_user")
+    suspend fun blockUser(@Body request: ProfileActionRequest)
+
+    @POST("rest/v1/rpc/report_user")
+    suspend fun reportUser(@Body request: ReportUserRequest)
 
     @GET("rest/v1/messages")
     suspend fun getMessages(

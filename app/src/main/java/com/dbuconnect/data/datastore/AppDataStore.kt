@@ -36,6 +36,7 @@ class AppDataStore @Inject constructor(
         val FILTER_INTENT = stringPreferencesKey("filter_intent")
         val FILTER_YEAR_MIN = intPreferencesKey("filter_year_min")
         val FILTER_YEAR_MAX = intPreferencesKey("filter_year_max")
+        val FILTER_DEPARTMENTS = stringPreferencesKey("filter_departments")
     }
 
     // Onboarding
@@ -118,9 +119,11 @@ class AppDataStore @Inject constructor(
 
     // Filters
     val filterSettings: Flow<FilterSettings> = context.dataStore.data.map { prefs ->
+        val deptString = prefs[Keys.FILTER_DEPARTMENTS] ?: ""
         FilterSettings(
             intent = prefs[Keys.FILTER_INTENT] ?: "",
-            yearRange = (prefs[Keys.FILTER_YEAR_MIN] ?: 1)..(prefs[Keys.FILTER_YEAR_MAX] ?: 5)
+            yearRange = (prefs[Keys.FILTER_YEAR_MIN] ?: 1)..(prefs[Keys.FILTER_YEAR_MAX] ?: 5),
+            departments = if (deptString.isBlank()) emptyList() else deptString.split(",")
         )
     }
 
@@ -129,11 +132,17 @@ class AppDataStore @Inject constructor(
             prefs[Keys.FILTER_INTENT] = settings.intent
             prefs[Keys.FILTER_YEAR_MIN] = settings.yearRange.first
             prefs[Keys.FILTER_YEAR_MAX] = settings.yearRange.last
+            prefs[Keys.FILTER_DEPARTMENTS] = settings.departments.joinToString(",")
         }
     }
 
-    // Logout
+    // Logout/session clear. Keep onboarding completion so users do not see onboarding again
+    // after signing out and reopening the app.
     suspend fun clearAll() {
-        context.dataStore.edit { it.clear() }
+        context.dataStore.edit { prefs ->
+            val onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false
+            prefs.clear()
+            prefs[Keys.ONBOARDING_COMPLETED] = onboardingCompleted
+        }
     }
 }

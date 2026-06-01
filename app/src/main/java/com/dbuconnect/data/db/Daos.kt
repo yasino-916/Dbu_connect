@@ -63,6 +63,9 @@ interface MatchDao {
     @Update
     suspend fun updateMatch(match: Match)
 
+    @Query("UPDATE matches SET lastMessage = :text, lastMessageTime = :timestamp WHERE id = :matchId")
+    suspend fun updateLastMessage(matchId: String, text: String, timestamp: Long)
+
     @Query("DELETE FROM matches")
     suspend fun deleteAll()
 }

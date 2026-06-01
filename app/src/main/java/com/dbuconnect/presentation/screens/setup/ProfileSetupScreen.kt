@@ -10,6 +10,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,31 +35,99 @@ import com.dbuconnect.presentation.viewmodels.ProfileViewModel
 // College -> Department mapping for DBU
 val collegesDepartments = linkedMapOf(
     "College of Engineering" to listOf(
-        "Computer Science", "Electrical Engineering", "Civil Engineering",
-        "Mechanical Engineering", "Architecture"
+        "Civil Engineering", "Electrical and Computer Engineering", "Mechanical Engineering",
+        "Chemical Engineering", "Industrial Engineering", "Water Resources and Irrigation Engineering"
     ),
-    "College of Business & Economics" to listOf(
-        "Business Administration", "Accounting & Finance", "Economics", "Management"
+    "College of Computing" to listOf(
+        "Computer Science", "Information Technology", "Information Systems", "Software Engineering"
     ),
-    "College of Medicine & Health Sciences" to listOf(
-        "Medicine", "Nursing", "Public Health", "Pharmacy"
+    "College of Natural and Computational Sciences" to listOf(
+        "Mathematics", "Physics", "Chemistry", "Biology", "Statistics", "Environmental Science"
     ),
-    "College of Natural & Computational Sciences" to listOf(
-        "Chemistry", "Physics", "Mathematics", "Biology", "Statistics"
+    "College of Agriculture and Natural Resource" to listOf(
+        "Plant Science", "Animal Science", "Horticulture", "Natural Resource Management",
+        "Agricultural Economics", "Rural Development and Agricultural Extension"
     ),
-    "College of Social Sciences & Humanities" to listOf(
-        "Psychology", "Sociology", "History", "Geography"
+    "College of Business and Economics" to listOf(
+        "Accounting and Finance", "Management", "Economics", "Marketing Management",
+        "Public Administration and Development Management", "Logistics and Supply Chain Management"
     ),
-    "School of Law" to listOf("Law")
+    "College of Social Sciences and Humanities" to listOf(
+        "History and Heritage Management", "Geography and Environmental Studies", "Sociology",
+        "Psychology", "Journalism and Communication", "Tourism and Hotel Management",
+        "English Language and Literature", "Amharic Language and Literature"
+    ),
+    "College of Education" to listOf(
+        "Biology Education", "Chemistry Education", "Mathematics Education",
+        "Physics Education", "English Language Teaching", "Special Needs and Inclusive Education"
+    ),
+    "School of Law" to listOf(
+        "Law (LLB)"
+    ),
+    "Asrat Woldeyes Health Science Campus" to listOf(
+        "Medicine (MBBS)", "Pharmacy", "Medical Laboratory Science", "Nursing",
+        "Midwifery", "Public Health", "Anesthesia", "Physiotherapy"
+    ),
+    "Mehal-Meda Campus (Highland Agriculture & Tourism)" to listOf(
+        "Highland Agriculture", "Tourism and Hotel Management"
+    )
 )
+
+fun getDepartmentDuration(dept: String): Int {
+    return when (dept) {
+        "Medicine (MBBS)" -> 8
+        
+        "Civil Engineering",
+        "Electrical and Computer Engineering",
+        "Mechanical Engineering",
+        "Chemical Engineering",
+        "Industrial Engineering",
+        "Water Resources and Irrigation Engineering",
+        "Software Engineering",
+        "Law (LLB)",
+        "Pharmacy" -> 5
+        
+        "Accounting and Finance",
+        "Management",
+        "Economics",
+        "Marketing Management",
+        "Public Administration and Development Management",
+        "Logistics and Supply Chain Management",
+        "History and Heritage Management",
+        "Geography and Environmental Studies",
+        "Sociology",
+        "Psychology",
+        "Journalism and Communication",
+        "Tourism and Hotel Management",
+        "English Language and Literature",
+        "Amharic Language and Literature",
+        "Biology Education",
+        "Chemistry Education",
+        "Mathematics Education",
+        "Physics Education",
+        "English Language Teaching",
+        "Special Needs and Inclusive Education" -> 3
+        
+        else -> 4
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileSetupScreen(
     onComplete: () -> Unit,
+    onBack: (() -> Unit)? = null,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+
+    // Navigate only after save succeeds (issue #6)
+    LaunchedEffect(state.saveSuccess) {
+        if (state.saveSuccess) {
+            viewModel.clearSaveSuccess()
+            onComplete()
+        }
+    }
 
     // Step management: 0=Photos, 1=Basic Info (required), 2=Interests (optional), 3=Privacy (optional)
     var currentStep by remember { mutableIntStateOf(0) }
@@ -71,9 +141,19 @@ fun ProfileSetupScreen(
     var expandedCollege by remember { mutableStateOf(false) }
     var expandedDept by remember { mutableStateOf(false) }
     var expandedYear by remember { mutableStateOf(false) }
-    var privacyPreview by remember { mutableStateOf(true) }
 
-    val years = (1..5).toList()
+    // Auto-resolve college from loaded department (for Edit Profile mode)
+    LaunchedEffect(state.editDepartment) {
+        if (state.editDepartment.isNotEmpty() && selectedCollege.isEmpty()) {
+            val college = collegesDepartments.entries.find { it.value.contains(state.editDepartment) }?.key
+            if (college != null) {
+                selectedCollege = college
+            }
+        }
+    }
+
+    val duration = getDepartmentDuration(state.editDepartment)
+    val years = (1..duration).toList()
     val allInterests = listOf(
         "Studying", "Coffee", "Sports", "Music", "Volunteering",
         "Photography", "Travel", "Gaming", "Art", "Reading",
@@ -87,6 +167,7 @@ fun ProfileSetupScreen(
             .fillMaxSize()
             .background(Color.White)
             .systemBarsPadding()
+            .imePadding()
     ) {
         // Top bar with back button
         Row(
@@ -99,14 +180,33 @@ fun ProfileSetupScreen(
                 IconButton(onClick = { currentStep-- }) {
                     Icon(Icons.Outlined.ArrowBack, contentDescription = "Back", tint = TextPrimary)
                 }
+            } else if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(Icons.Outlined.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                }
             } else {
                 Spacer(modifier = Modifier.width(48.dp))
             }
             Spacer(modifier = Modifier.weight(1f))
-            // Skip to optional link (visible on required steps)
-            if (currentStep < 2) {
-                TextButton(onClick = { currentStep = 2 }) {
-                    Text("Skip to optional →", color = PrimaryGreen, fontSize = 14.sp)
+            // Skip button (visible on steps that are optional or have optional data)
+            val isStepOptional = currentStep == 0 || currentStep == 2 || currentStep == 3
+            if (isStepOptional) {
+                TextButton(
+                    onClick = {
+                        when (currentStep) {
+                            0 -> currentStep = 1
+                            2 -> currentStep = 3
+                            3 -> {
+                                val photoStrings = photoUris.filterNotNull().map { it.toString() }
+                                viewModel.updatePhotos(photoStrings)
+                                if (viewModel.validateProfile()) {
+                                    viewModel.saveProfile()
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text("Skip", color = PrimaryGreen, fontSize = 14.sp)
                 }
             }
         }
@@ -151,7 +251,8 @@ fun ProfileSetupScreen(
             when (currentStep) {
                 0 -> PhotoUploadStep(
                     photoUris = photoUris,
-                    onPhotoUrisChanged = { photoUris = it }
+                    onPhotoUrisChanged = { photoUris = it },
+                    error = state.photosError
                 )
                 1 -> BasicInfoStep(
                     state = state,
@@ -172,8 +273,20 @@ fun ProfileSetupScreen(
                     allInterests = allInterests
                 )
                 3 -> PrivacyStep(
-                    privacyPreview = privacyPreview,
-                    onPrivacyPreviewChange = { privacyPreview = it }
+                    state = state,
+                    viewModel = viewModel
+                )
+            }
+
+            // Show save error if any
+            if (state.error != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = state.error!!,
+                    color = StatusError,
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
@@ -189,15 +302,36 @@ fun ProfileSetupScreen(
         ) {
             if (currentStep > 0) {
                 SecondaryButton(
-                    text = "← Previous",
+                    text = "Previous",
                     onClick = { currentStep-- },
+                    modifier = Modifier.weight(1f)
+                )
+            } else if (onBack != null) {
+                SecondaryButton(
+                    text = "Previous",
+                    onClick = onBack,
                     modifier = Modifier.weight(1f)
                 )
             }
             if (currentStep < totalSteps - 1) {
                 PrimaryButton(
-                    text = "Next →",
-                    onClick = { currentStep++ },
+                    text = "Next",
+                    onClick = {
+                        // Validate before moving to next step
+                        when (currentStep) {
+                            0 -> {
+                                // Update photos first so validation can check
+                                val photoStrings = photoUris.filterNotNull().map { it.toString() }
+                                viewModel.updatePhotos(photoStrings)
+                                if (photoStrings.isEmpty()) {
+                                    viewModel.updatePhotos(emptyList()) // trigger error
+                                    // Don't block — photos are optional for next step
+                                }
+                                currentStep++
+                            }
+                            else -> currentStep++
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
             } else {
@@ -207,8 +341,13 @@ fun ProfileSetupScreen(
                         // Convert photo URIs to string list for the profile
                         val photoStrings = photoUris.filterNotNull().map { it.toString() }
                         viewModel.updatePhotos(photoStrings)
-                        viewModel.saveProfile()
-                        onComplete()
+
+                        // Validate required fields (issue #7)
+                        if (viewModel.validateProfile()) {
+                            // saveProfile() is async; navigation happens via
+                            // LaunchedEffect on saveSuccess (issue #6)
+                            viewModel.saveProfile()
+                        }
                     },
                     isLoading = state.isSaving,
                     modifier = Modifier.weight(1f)
@@ -223,7 +362,8 @@ fun ProfileSetupScreen(
 @Composable
 private fun PhotoUploadStep(
     photoUris: List<Uri?>,
-    onPhotoUrisChanged: (List<Uri?>) -> Unit
+    onPhotoUrisChanged: (List<Uri?>) -> Unit,
+    error: String? = null
 ) {
     Text(
         text = "Upload Your Photos",
@@ -240,6 +380,12 @@ private fun PhotoUploadStep(
         textAlign = TextAlign.Center,
         lineHeight = 20.sp
     )
+
+    if (error != null) {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = error, color = StatusError, fontSize = 13.sp)
+    }
+
     Spacer(modifier = Modifier.height(24.dp))
 
     // 2x2 photo grid
@@ -381,8 +527,10 @@ private fun BasicInfoStep(
         value = state.editName,
         onValueChange = { viewModel.updateName(it) },
         modifier = Modifier.fillMaxWidth(),
-        label = { Text("Full Name") },
+        label = { Text("Full Name *") },
         placeholder = { Text("Full Name", color = TextTertiary) },
+        isError = state.nameError != null,
+        supportingText = state.nameError?.let { { Text(it, color = StatusError) } },
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = PrimaryGreen,
@@ -396,20 +544,15 @@ private fun BasicInfoStep(
     Spacer(modifier = Modifier.height(12.dp))
 
     // College dropdown (first level)
-    ExposedDropdownMenuBox(
-        expanded = expandedCollege,
-        onExpandedChange = onExpandedCollegeChange
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = selectedCollege,
             onValueChange = {},
             readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
-            label = { Text("College") },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("College *") },
             placeholder = { Text("Select College", color = TextTertiary) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCollege) },
+            trailingIcon = { Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
@@ -418,46 +561,45 @@ private fun BasicInfoStep(
                 unfocusedContainerColor = Color.White
             )
         )
-        ExposedDropdownMenu(
-            expanded = expandedCollege,
-            onDismissRequest = { onExpandedCollegeChange(false) }
-        ) {
-            collegesDepartments.keys.forEach { college ->
-                DropdownMenuItem(
-                    text = { Text(college) },
-                    onClick = {
-                        onCollegeSelected(college)
-                        // Reset department when college changes
-                        viewModel.updateDepartment("")
-                        onExpandedCollegeChange(false)
-                    }
-                )
-            }
-        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { onExpandedCollegeChange(true) }
+        )
+    }
+
+    if (expandedCollege) {
+        DBUSelectorBottomSheet(
+            title = "Select College",
+            items = collegesDepartments.keys.toList(),
+            onItemSelected = { college ->
+                onCollegeSelected(college)
+                // Reset department when college changes
+                viewModel.updateDepartment("")
+            },
+            onDismiss = { onExpandedCollegeChange(false) }
+        )
     }
 
     Spacer(modifier = Modifier.height(12.dp))
 
     // Department dropdown (second level - filtered by college)
-    ExposedDropdownMenuBox(
-        expanded = expandedDept,
-        onExpandedChange = { if (selectedCollege.isNotEmpty()) onExpandedDeptChange(it) }
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = state.editDepartment,
             onValueChange = {},
             readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
-            label = { Text("Department") },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Department *") },
             placeholder = {
                 Text(
                     if (selectedCollege.isEmpty()) "Select college first" else "Select Department",
                     color = TextTertiary
                 )
             },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedDept) },
+            isError = state.departmentError != null,
+            supportingText = state.departmentError?.let { { Text(it, color = StatusError) } },
+            trailingIcon = { Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary) },
             shape = RoundedCornerShape(12.dp),
             enabled = selectedCollege.isNotEmpty(),
             colors = OutlinedTextFieldDefaults.colors(
@@ -469,39 +611,44 @@ private fun BasicInfoStep(
                 disabledContainerColor = SurfaceMuted
             )
         )
-        ExposedDropdownMenu(
-            expanded = expandedDept,
-            onDismissRequest = { onExpandedDeptChange(false) }
-        ) {
-            departmentsForCollege.forEach { dept ->
-                DropdownMenuItem(
-                    text = { Text(dept) },
-                    onClick = {
-                        viewModel.updateDepartment(dept)
-                        onExpandedDeptChange(false)
-                    }
-                )
-            }
+        if (selectedCollege.isNotEmpty()) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clickable { onExpandedDeptChange(true) }
+            )
         }
+    }
+
+    if (expandedDept) {
+        DBUSelectorBottomSheet(
+            title = "Select Department",
+            items = departmentsForCollege,
+            onItemSelected = { dept ->
+                viewModel.updateDepartment(dept)
+                val maxYears = getDepartmentDuration(dept)
+                if (state.editYear > maxYears) {
+                    viewModel.updateYear(maxYears)
+                }
+            },
+            onDismiss = { onExpandedDeptChange(false) }
+        )
     }
 
     Spacer(modifier = Modifier.height(12.dp))
 
     // Year dropdown
-    ExposedDropdownMenuBox(
-        expanded = expandedYear,
-        onExpandedChange = onExpandedYearChange
-    ) {
+    Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = if (state.editYear > 0) "Year ${state.editYear}" else "",
             onValueChange = {},
             readOnly = true,
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
-            label = { Text("Year") },
+            modifier = Modifier.fillMaxWidth(),
+            label = { Text("Year *") },
             placeholder = { Text("Year", color = TextTertiary) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedYear) },
+            isError = state.yearError != null,
+            supportingText = state.yearError?.let { { Text(it, color = StatusError) } },
+            trailingIcon = { Icon(Icons.Filled.ArrowDropDown, null, tint = TextSecondary) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = PrimaryGreen,
@@ -510,20 +657,23 @@ private fun BasicInfoStep(
                 unfocusedContainerColor = Color.White
             )
         )
-        ExposedDropdownMenu(
-            expanded = expandedYear,
-            onDismissRequest = { onExpandedYearChange(false) }
-        ) {
-            years.forEach { year ->
-                DropdownMenuItem(
-                    text = { Text("Year $year") },
-                    onClick = {
-                        viewModel.updateYear(year)
-                        onExpandedYearChange(false)
-                    }
-                )
-            }
-        }
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable { onExpandedYearChange(true) }
+        )
+    }
+
+    if (expandedYear) {
+        DBUSelectorBottomSheet(
+            title = "Select Year",
+            items = years.map { "Year $it" },
+            onItemSelected = { yearString ->
+                val year = yearString.substringAfter("Year ").toIntOrNull() ?: 1
+                viewModel.updateYear(year)
+            },
+            onDismiss = { onExpandedYearChange(false) }
+        )
     }
 
     Spacer(modifier = Modifier.height(12.dp))
@@ -531,12 +681,13 @@ private fun BasicInfoStep(
     // Bio
     OutlinedTextField(
         value = state.editBio,
-        onValueChange = { viewModel.updateBio(it) },
+        onValueChange = { if (it.length <= 300) viewModel.updateBio(it) },
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp),
         label = { Text("Bio (Optional)") },
         placeholder = { Text("Tell us about yourself...", color = TextTertiary) },
+        supportingText = { Text("${state.editBio.length}/300", color = TextTertiary) },
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = PrimaryGreen,
@@ -602,12 +753,15 @@ private fun InterestsStep(
 }
 
 // ──────────────────── Step 3: Privacy (Optional) ────────────────────
+// Issue #9: Privacy step now persists settings via viewModel
 
 @Composable
 private fun PrivacyStep(
-    privacyPreview: Boolean,
-    onPrivacyPreviewChange: (Boolean) -> Unit
+    state: com.dbuconnect.presentation.viewmodels.ProfileState,
+    viewModel: ProfileViewModel
 ) {
+    val privacy = state.privacySettings
+
     Text(
         text = "Privacy Settings",
         fontSize = 24.sp,
@@ -638,20 +792,69 @@ private fun PrivacyStep(
 
     Spacer(modifier = Modifier.height(24.dp))
 
+    // Show Department toggle
+    PrivacyToggleRow(
+        title = "Show Department",
+        description = "Allow others to see your department",
+        checked = privacy.showDepartment,
+        onCheckedChange = {
+            viewModel.updatePrivacySetting(privacy.copy(showDepartment = it))
+        }
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // Show Year toggle
+    PrivacyToggleRow(
+        title = "Show Year",
+        description = "Allow others to see your year",
+        checked = privacy.showYear,
+        onCheckedChange = {
+            viewModel.updatePrivacySetting(privacy.copy(showYear = it))
+        }
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    // Hide Profile toggle
+    PrivacyToggleRow(
+        title = "Hide Profile",
+        description = "Your profile won't appear in discover",
+        checked = privacy.hideProfile,
+        onCheckedChange = {
+            viewModel.updatePrivacySetting(privacy.copy(hideProfile = it))
+        }
+    )
+}
+
+@Composable
+private fun PrivacyToggleRow(
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = "Privacy Preview",
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = TextPrimary
-        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = TextPrimary
+            )
+            Text(
+                text = description,
+                fontSize = 13.sp,
+                color = TextSecondary
+            )
+        }
         Switch(
-            checked = privacyPreview,
-            onCheckedChange = onPrivacyPreviewChange,
+            checked = checked,
+            onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = PrimaryGreen,
@@ -661,3 +864,65 @@ private fun PrivacyStep(
         )
     }
 }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DBUSelectorBottomSheet(
+    title: String,
+    items: List<String>,
+    onItemSelected: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Color.White,
+        dragHandle = { BottomSheetDefaults.DragHandle(color = BorderDefault) }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(bottom = 24.dp)
+        ) {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
+            )
+            
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(BorderDefault))
+            
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 360.dp)
+            ) {
+                items(items) { item ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onItemSelected(item)
+                                onDismiss()
+                            },
+                        color = Color.White
+                    ) {
+                        Column {
+                            Text(
+                                text = item,
+                                color = TextPrimary,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
+                            )
+                            Box(modifier = Modifier.fillMaxWidth().height(0.5.dp).background(BorderDefault.copy(alpha = 0.5f)))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+

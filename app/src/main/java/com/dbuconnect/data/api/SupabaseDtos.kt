@@ -31,6 +31,29 @@ data class SupabaseAuthUser(
     @SerializedName("user_metadata") val metadata: Map<String, String>?
 )
 
+class EmptyRequest
+
+data class ProfileActionRequest(
+    @SerializedName("target_user_id") val targetUserId: String
+)
+
+data class UpdatePrivacyRequest(
+    @SerializedName("show_department") val showDepartment: Boolean,
+    @SerializedName("show_year") val showYear: Boolean,
+    @SerializedName("hide_profile") val hideProfile: Boolean
+)
+
+data class RsvpEventRequest(
+    @SerializedName("target_event_id") val eventId: String,
+    @SerializedName("new_status") val status: String
+)
+
+data class ReportUserRequest(
+    @SerializedName("target_user_id") val targetUserId: String,
+    @SerializedName("report_reason") val reason: String,
+    @SerializedName("report_details") val details: String = ""
+)
+
 data class ProfileDto(
     val id: String,
     val name: String,

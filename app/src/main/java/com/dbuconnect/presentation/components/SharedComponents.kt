@@ -28,7 +28,7 @@ fun PrimaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .heightIn(min = 52.dp),
         enabled = enabled && !isLoading,
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
@@ -40,7 +40,8 @@ fun PrimaryButton(
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 0.dp,
             pressedElevation = 2.dp
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
@@ -52,7 +53,8 @@ fun PrimaryButton(
             Text(
                 text = text,
                 fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center
             )
         }
     }
@@ -69,19 +71,21 @@ fun SecondaryButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .heightIn(min = 52.dp),
         enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, BorderDefault),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = TextPrimary,
             containerColor = Color.Transparent
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(
             text = text,
             fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -96,13 +100,14 @@ fun GoogleButton(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
-            .height(52.dp),
+            .heightIn(min = 52.dp),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, BorderDefault),
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = TextPrimary,
             containerColor = Color.White
-        )
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
     ) {
         Text(
             text = "G",
@@ -114,7 +119,8 @@ fun GoogleButton(
         Text(
             text = text,
             fontSize = 16.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
         )
     }
 }

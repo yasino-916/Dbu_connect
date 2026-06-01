@@ -122,6 +122,14 @@ class AppRepository @Inject constructor(
     fun observeAllMatches(): Flow<List<Match>> = matchDao.observeMatches()
     fun observeMatch(matchId: String): Flow<Match?> = matchDao.observeMatch(matchId)
 
+    suspend fun reportUser(userId: String, reason: String, details: String = ""): Result<Unit> {
+        return api.reportUser(userId, reason, details)
+    }
+
+    suspend fun blockUser(userId: String): Result<Unit> {
+        return api.blockUser(userId)
+    }
+
     // Messages
     suspend fun refreshMessages(chatId: String): Result<List<Message>> {
         val result = api.getMessages(chatId)
@@ -139,6 +147,11 @@ class AppRepository @Inject constructor(
             messageDao.insertMessage(message)
         }
         return result
+    }
+
+    // Issue #15: update the match row with the last message for immediate list UI update
+    suspend fun updateMatchLastMessage(matchId: String, text: String, timestamp: Long) {
+        matchDao.updateLastMessage(matchId, text, timestamp)
     }
 
     // Events

@@ -4,11 +4,13 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -31,11 +33,44 @@ import com.dbuconnect.presentation.screens.profile.ProfileScreen
 import com.dbuconnect.presentation.screens.profile.SettingsScreen
 import com.dbuconnect.presentation.screens.setup.ProfileSetupScreen
 import com.dbuconnect.presentation.theme.*
+import com.dbuconnect.presentation.viewmodels.DiscoverViewModel
+import com.dbuconnect.presentation.viewmodels.StartupViewModel
+
+@Composable
+private fun StartupRouterScreen(
+    navController: NavHostController,
+    viewModel: StartupViewModel = hiltViewModel()
+) {
+    val state by viewModel.state.collectAsState()
+
+    LaunchedEffect(state) {
+        if (!state.isReady) return@LaunchedEffect
+
+        val destination = when {
+            !state.onboardingCompleted -> Screen.Onboarding.route
+            !state.isLoggedIn -> Screen.Login.route
+            !state.isProfileComplete -> Screen.ProfileSetup.route
+            else -> Screen.Discover.route
+        }
+
+        navController.navigate(destination) {
+            popUpTo(Screen.Splash.route) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = PrimaryGreen)
+    }
+}
 
 @Composable
 fun DBUConnectNavHost(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screen.Onboarding.route
+    startDestination: String = Screen.Splash.route
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -100,6 +135,11 @@ fun DBUConnectNavHost(
             startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // Startup router
+            composable(Screen.Splash.route) {
+                StartupRouterScreen(navController = navController)
+            }
+
             // Onboarding
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
@@ -114,9 +154,16 @@ fun DBUConnectNavHost(
             // Login
             composable(Screen.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = {
-                        navController.navigate(Screen.ProfileSetup.route) {
+                    onLoginSuccess = { isProfileComplete ->
+                        val destination = if (isProfileComplete) {
+                            Screen.Discover.route
+                        } else {
+                            Screen.ProfileSetup.route
+                        }
+
+                        navController.navigate(destination) {
                             popUpTo(Screen.Login.route) { inclusive = true }
+                            launchSingleTop = true
                         }
                     },
                     onNavigateToSignUp = {
@@ -150,7 +197,15 @@ fun DBUConnectNavHost(
 
             // Discover
             composable(Screen.Discover.route) {
+                // Issue #12: Scope DiscoverViewModel to the parent back stack entry
+                // so Filters and Discover share the same instance
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.Discover.route)
+                }
+                val discoverViewModel: DiscoverViewModel = hiltViewModel(parentEntry)
+
                 DiscoverScreen(
+                    viewModel = discoverViewModel,
                     onOpenFilters = { navController.navigate(Screen.Filters.route) },
                     onMatchFound = { matchId ->
                         navController.navigate(Screen.MatchSuccess.createRoute(matchId))
@@ -158,9 +213,17 @@ fun DBUConnectNavHost(
                 )
             }
 
-            // Filters
+            // Filters - Issue #12: share DiscoverViewModel with Discover screen
             composable(Screen.Filters.route) {
-                FiltersScreen(onBack = { navController.popBackStack() })
+                val parentEntry = remember(it) {
+                    navController.getBackStackEntry(Screen.Discover.route)
+                }
+                val discoverViewModel: DiscoverViewModel = hiltViewModel(parentEntry)
+
+                FiltersScreen(
+                    viewModel = discoverViewModel,
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             // Matches
@@ -191,14 +254,16 @@ fun DBUConnectNavHost(
                 )
             }
 
-            // Match Success
+            // Match Success - Issue #13: pass real match data via nav args
             composable(
                 route = Screen.MatchSuccess.route,
                 arguments = listOf(navArgument("matchId") { type = NavType.StringType })
-            ) {
+            ) { backStackEntry ->
+                val matchId = backStackEntry.arguments?.getString("matchId") ?: ""
+                // Get match name/photo from the DiscoverViewModel's last match result
+                // For now we pass the matchId and let the screen show data
                 MatchSuccessScreen(
                     onSendMessage = {
-                        val matchId = it.arguments?.getString("matchId") ?: ""
                         navController.navigate(Screen.Chat.createRoute(matchId)) {
                             popUpTo(Screen.Discover.route)
                         }
@@ -215,7 +280,7 @@ fun DBUConnectNavHost(
                     }
                 )
             }
-            
+
             composable(Screen.CreateEvent.route) {
                 com.dbuconnect.presentation.screens.events.CreateEventScreen(
                     onBack = { navController.popBackStack() }
@@ -237,7 +302,8 @@ fun DBUConnectNavHost(
 
             composable(Screen.EditProfile.route) {
                 ProfileSetupScreen(
-                    onComplete = { navController.popBackStack() }
+                    onComplete = { navController.popBackStack() },
+                    onBack = { navController.popBackStack() }
                 )
             }
 
