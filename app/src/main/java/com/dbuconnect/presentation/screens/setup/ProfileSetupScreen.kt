@@ -908,7 +908,7 @@ private fun DBUSelectorBottomSheet(
                                 onItemSelected(item)
                                 onDismiss()
                             },
-                        color = Color.White
+                        color = BackgroundWhite
                     ) {
                         Column {
                             Text(

@@ -171,6 +171,20 @@ class AuthViewModel @Inject constructor(
             val code = error.code()
             val errorBody = runCatching { error.response()?.errorBody()?.string() }.getOrNull()
             
+            // Try to extract msg from Supabase JSON response
+            val serverMessage = errorBody?.let { body ->
+                runCatching {
+                    val json = org.json.JSONObject(body)
+                    json.optString("msg").takeIf { it.isNotBlank() }
+                        ?: json.optString("error_description").takeIf { it.isNotBlank() }
+                        ?: json.optString("error").takeIf { it.isNotBlank() }
+                }.getOrNull()
+            }
+            
+            if (serverMessage != null) {
+                return serverMessage
+            }
+            
             return when {
                 code == 400 && errorBody?.contains("Email not confirmed", ignoreCase = true) == true -> {
                     "Your email has not been confirmed yet. Please verify your inbox."

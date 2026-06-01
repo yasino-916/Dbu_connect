@@ -64,11 +64,22 @@ class SupabaseApiService @Inject constructor(
             return@runCatching loginResult.getOrThrow()
         }
         
+        // If signup succeeded but login failed with invalid credentials, the email is already registered
+        val loginException = loginResult.exceptionOrNull()
+        if (authResult.isSuccess && loginException is retrofit2.HttpException) {
+            val code = loginException.code()
+            val errorBody = runCatching { loginException.response()?.errorBody()?.string() }.getOrNull()
+            if (code == 400 && (errorBody?.contains("invalid_grant", ignoreCase = true) == true || 
+                               errorBody?.contains("credentials", ignoreCase = true) == true)) {
+                throw Exception("This email is already registered. Please sign in instead.")
+            }
+        }
+        
         // Fall back to original exceptions
         if (authResult.isFailure) {
             throw authResult.exceptionOrNull() ?: Exception("Sign up failed")
         }
-        throw loginResult.exceptionOrNull() ?: Exception("Login failed after sign up")
+        throw loginException ?: Exception("Login failed after sign up")
     }
 
     override suspend fun recoverPassword(email: String): Result<Unit> = runCatching {
