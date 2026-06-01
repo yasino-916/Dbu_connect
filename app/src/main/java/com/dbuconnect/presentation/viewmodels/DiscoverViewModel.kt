@@ -24,6 +24,9 @@ class DiscoverViewModel @Inject constructor(
     private val _matchResult = MutableStateFlow<Match?>(null)
     val matchResult: StateFlow<Match?> = _matchResult.asStateFlow()
 
+    private val _likedNotification = MutableSharedFlow<String>()
+    val likedNotification = _likedNotification.asSharedFlow()
+
     private val _filters = MutableStateFlow(FilterSettings())
     val filters: StateFlow<FilterSettings> = _filters.asStateFlow()
 
@@ -55,7 +58,11 @@ class DiscoverViewModel @Inject constructor(
         viewModelScope.launch {
             val result = repository.likeProfile(card.userId)
             result.onSuccess { match ->
-                _matchResult.value = match
+                if (match != null) {
+                    _matchResult.value = match
+                } else {
+                    _likedNotification.emit("Liked ${card.name}! You will match when they like you back.")
+                }
             }
             advanceCard()
         }

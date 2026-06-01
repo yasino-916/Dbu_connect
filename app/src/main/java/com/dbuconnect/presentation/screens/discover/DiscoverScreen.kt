@@ -45,10 +45,17 @@ fun DiscoverScreen(
     val currentIndex by viewModel.currentIndex.collectAsState()
     val matchResult by viewModel.matchResult.collectAsState()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(matchResult) {
         matchResult?.let { match ->
             onMatchFound(match.id)
             viewModel.clearMatchResult()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.likedNotification.collect { message ->
+            android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
         }
     }
 

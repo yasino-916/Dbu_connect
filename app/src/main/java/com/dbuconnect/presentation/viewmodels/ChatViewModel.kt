@@ -37,10 +37,26 @@ class ChatViewModel @Inject constructor(
     val messages: StateFlow<List<Message>> = repository.observeMessages(matchId)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    private var pollingJob: kotlinx.coroutines.Job? = null
+
     init {
         loadCurrentUserId()
         observeMatch()
-        loadMessages()
+        startMessagePolling()
+    }
+
+    private fun startMessagePolling() {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch {
+            while (true) {
+                try {
+                    repository.refreshMessages(matchId)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+                kotlinx.coroutines.delay(3000) // Poll every 3 seconds
+            }
+        }
     }
 
     private fun loadCurrentUserId() {
@@ -73,14 +89,6 @@ class ChatViewModel @Inject constructor(
                     }
                 }
             }
-        }
-    }
-
-    private fun loadMessages() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            repository.refreshMessages(matchId)
-            _state.update { it.copy(isLoading = false) }
         }
     }
 

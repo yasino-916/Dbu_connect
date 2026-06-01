@@ -27,18 +27,30 @@ class MatchesViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private var pollingJob: kotlinx.coroutines.Job? = null
+
     init {
-        loadMatches()
+        startMatchesPolling()
     }
 
-    fun loadMatches() {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            val result = repository.refreshMatches()
-            result.onSuccess {
-                _uiState.value = UiState.Success(Unit)
-            }.onFailure { error ->
-                _uiState.value = UiState.Error(error.message ?: "Failed to load matches")
+    private fun startMatchesPolling() {
+        pollingJob?.cancel()
+        pollingJob = viewModelScope.launch {
+            var isFirstLoad = true
+            while (true) {
+                if (isFirstLoad) {
+                    _uiState.value = UiState.Loading
+                }
+                val result = repository.refreshMatches()
+                result.onSuccess {
+                    _uiState.value = UiState.Success(Unit)
+                }.onFailure { error ->
+                    if (isFirstLoad) {
+                        _uiState.value = UiState.Error(error.message ?: "Failed to load matches")
+                    }
+                }
+                isFirstLoad = false
+                kotlinx.coroutines.delay(5000) // Poll every 5 seconds
             }
         }
     }
