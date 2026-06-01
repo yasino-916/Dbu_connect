@@ -19,7 +19,8 @@ data class AuthState(
     val error: String? = null,
     val user: User? = null,
     val isLoggedIn: Boolean = false,
-    val isSignUpMode: Boolean = false
+    val isSignUpMode: Boolean = false,
+    val isForgotPasswordSuccess: Boolean = false
 )
 
 @HiltViewModel
@@ -184,11 +185,40 @@ class AuthViewModel @Inject constructor(
                 code == 401 -> "Unauthorized access. Please verify your credentials."
                 code == 403 -> "Access denied. Only registered students can sign in."
                 code == 404 -> "Server connection failed (404). Please try again."
+                code == 429 -> "Too many attempts. Please wait a moment and try again."
                 code >= 500 -> "Server is currently offline. Please try again later."
                 else -> "Network error ($code). Please check your connection."
             }
         }
         return error.message ?: defaultMessage
+    }
+
+    fun recoverPassword() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+            val email = _state.value.email.trim()
+
+            if (!isValidDBUEmail(email)) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Please use your university email (e.g., name@dbu.edu.et)"
+                    )
+                }
+                return@launch
+            }
+
+            val result = repository.recoverPassword(email)
+            result.onSuccess {
+                _state.update { it.copy(isLoading = false, isForgotPasswordSuccess = true) }
+            }.onFailure { error ->
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Failed to send reset link")) }
+            }
+        }
+    }
+
+    fun resetForgotPasswordSuccess() {
+        _state.update { it.copy(isForgotPasswordSuccess = false) }
     }
 
     fun clearError() {

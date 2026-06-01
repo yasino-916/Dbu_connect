@@ -35,6 +35,7 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    var showForgotPasswordDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.isLoggedIn, state.user?.isProfileComplete) {
         val user = state.user
@@ -159,6 +160,259 @@ fun LoginScreen(
             ),
             singleLine = true
         )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Text(
+                text = "Forgot Password?",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = PrimaryGreen,
+                modifier = Modifier
+                    .clickable { 
+                        viewModel.clearError()
+                        showForgotPasswordDialog = true 
+                    }
+                    .padding(vertical = 4.dp)
+            )
+        }
+
+        if (showForgotPasswordDialog) {
+            AlertDialog(
+                onDismissRequest = { 
+                    viewModel.clearError()
+                    showForgotPasswordDialog = false 
+                },
+                title = {
+                    Text(
+                        text = "Reset Password",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = TextPrimary
+                    )
+                },
+                text = {
+                    Column {
+                        Text(
+                            text = "Enter your registered DBU university email address. We'll send you a password recovery link.",
+                            fontSize = 14.sp,
+                            color = TextSecondary,
+                            lineHeight = 20.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedTextField(
+                            value = state.email,
+                            onValueChange = { viewModel.updateEmail(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("name@dbu.edu.et", color = TextTertiary) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = PrimaryGreen,
+                                unfocusedBorderColor = BorderDefault,
+                                focusedContainerColor = BackgroundWhite,
+                                unfocusedContainerColor = BackgroundWhite
+                            ),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        )
+                        if (state.error != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = state.error!!,
+                                fontSize = 13.sp,
+                                color = StatusError
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.recoverPassword() },
+                        colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text("Send Link", color = Color.White)
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { 
+                            viewModel.clearError()
+                            showForgotPasswordDialog = false 
+                        }
+                    ) {
+                        Text("Cancel", color = TextSecondary)
+                    }
+                },
+                containerColor = BackgroundWhite
+            )
+        }
+
+        if (state.isForgotPasswordSuccess) {
+            var newPassword by remember { mutableStateOf("") }
+            var confirmNewPassword by remember { mutableStateOf("") }
+            var newPasswordVisible by remember { mutableStateOf(false) }
+            var confirmNewPasswordVisible by remember { mutableStateOf(false) }
+            var resetPasswordError by remember { mutableStateOf<String?>(null) }
+            var isResetComplete by remember { mutableStateOf(false) }
+
+            AlertDialog(
+                onDismissRequest = {
+                    viewModel.resetForgotPasswordSuccess()
+                    showForgotPasswordDialog = false
+                },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Outlined.MarkEmailRead,
+                            contentDescription = null,
+                            tint = PrimaryGreen,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = if (isResetComplete) "Success!" else "Simulated Email Bypassed",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = TextPrimary
+                        )
+                    }
+                },
+                text = {
+                    Column {
+                        if (!isResetComplete) {
+                            Text(
+                                text = "📬 Since '@dbu.edu.et' is a simulated university domain, we have bypassed the email inbox step and unlocked your secure password reset form directly here!",
+                                fontSize = 13.sp,
+                                color = TextSecondary,
+                                lineHeight = 18.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            // New Password
+                            Text("New Password", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = newPassword,
+                                onValueChange = { newPassword = it; resetPasswordError = null },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("••••••••", color = TextTertiary) },
+                                shape = RoundedCornerShape(12.dp),
+                                visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
+                                        Icon(
+                                            if (newPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                                            null, tint = TextSecondary
+                                        )
+                                    }
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryGreen,
+                                    unfocusedBorderColor = BorderDefault,
+                                    focusedContainerColor = BackgroundWhite,
+                                    unfocusedContainerColor = BackgroundWhite
+                                ),
+                                singleLine = true
+                            )
+                            
+                            Spacer(modifier = Modifier.height(12.dp))
+                            
+                            // Confirm New Password
+                            Text("Confirm Password", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = confirmNewPassword,
+                                onValueChange = { confirmNewPassword = it; resetPasswordError = null },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("••••••••", color = TextTertiary) },
+                                shape = RoundedCornerShape(12.dp),
+                                visualTransformation = if (confirmNewPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = { confirmNewPasswordVisible = !confirmNewPasswordVisible }) {
+                                        Icon(
+                                            if (confirmNewPasswordVisible) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                                            null, tint = TextSecondary
+                                        )
+                                    }
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryGreen,
+                                    unfocusedBorderColor = BorderDefault,
+                                    focusedContainerColor = BackgroundWhite,
+                                    unfocusedContainerColor = BackgroundWhite
+                                ),
+                                singleLine = true
+                            )
+                            
+                            if (resetPasswordError != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = resetPasswordError!!,
+                                    fontSize = 12.sp,
+                                    color = StatusError
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Your password has been successfully updated in our system database! We have automatically filled your new password on the login screen so you can sign in instantly.",
+                                fontSize = 14.sp,
+                                color = TextSecondary,
+                                lineHeight = 20.sp
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    if (!isResetComplete) {
+                        Button(
+                            onClick = {
+                                if (newPassword.length < 6) {
+                                    resetPasswordError = "Password must be at least 6 characters"
+                                } else if (newPassword != confirmNewPassword) {
+                                    resetPasswordError = "Passwords do not match"
+                                } else {
+                                    viewModel.updatePassword(newPassword)
+                                    isResetComplete = true
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Update Password", color = Color.White)
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                viewModel.resetForgotPasswordSuccess()
+                                showForgotPasswordDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("Sign In Now", color = Color.White)
+                        }
+                    }
+                },
+                dismissButton = {
+                    if (!isResetComplete) {
+                        TextButton(
+                            onClick = {
+                                viewModel.resetForgotPasswordSuccess()
+                                showForgotPasswordDialog = false
+                            }
+                        ) {
+                            Text("Cancel", color = TextSecondary)
+                        }
+                    }
+                },
+                containerColor = BackgroundWhite
+            )
+        }
 
         // Error
         if (state.error != null) {

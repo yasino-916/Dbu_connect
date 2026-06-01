@@ -43,6 +43,10 @@ class AppRepository @Inject constructor(
         return result
     }
 
+    suspend fun recoverPassword(email: String): Result<Unit> {
+        return api.recoverPassword(email)
+    }
+
     suspend fun logout() {
         dataStore.clearAll()
         userDao.deleteAll()

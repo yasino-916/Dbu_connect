@@ -21,6 +21,7 @@ interface SupabaseRestApi {
     suspend fun getProfiles(
         @Query("select") select: String = "*",
         @Query("id") idFilter: String? = null,
+        @Query("email") emailFilter: String? = null,
         @Query("is_profile_complete") completeFilter: String? = null
     ): List<ProfileDto>
 

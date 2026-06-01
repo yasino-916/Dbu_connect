@@ -71,6 +71,14 @@ class SupabaseApiService @Inject constructor(
         throw loginResult.exceptionOrNull() ?: Exception("Login failed after sign up")
     }
 
+    override suspend fun recoverPassword(email: String): Result<Unit> = runCatching {
+        // Supabase prevents email enumeration by design (returns 200 for any email).
+        // We cannot reliably check if an email is registered without authentication.
+        // The real protection is at login time - if the account doesn't exist,
+        // the new password won't work anyway.
+        api.recoverPassword(RecoverRequest(email))
+    }
+
     override suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>> = runCatching {
         val currentUserId = dataStore.userId.first()
         val remoteProfiles = runCatching {

@@ -285,7 +285,20 @@ class MockApiService @Inject constructor() : DBUApiService {
 
     override suspend fun recoverPassword(email: String): Result<Unit> {
         delay(500)
-        return Result.success(Unit)
+        val registeredEmails = listOf(
+            "admin@dbu.edu.et",
+            "gech@dbu.edu.et",
+            "gelila@dbu.edu.et",
+            "abel@dbu.edu.et",
+            "beth@dbu.edu.et",
+            "naod@dbu.edu.et"
+        )
+        val exists = registeredEmails.any { it.equals(email.trim(), ignoreCase = true) }
+        return if (exists) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception("This email address is not registered in our database."))
+        }
     }
 
     override suspend fun signUp(
