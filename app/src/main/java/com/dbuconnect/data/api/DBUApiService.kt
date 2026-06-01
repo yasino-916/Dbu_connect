@@ -2,10 +2,19 @@ package com.dbuconnect.data.api
 
 import com.dbuconnect.data.models.*
 
+data class PasswordRecoveryInfo(
+    val universityEmail: String,
+    val recoveryEmail: String,
+    val verificationCode: String
+)
+
 interface DBUApiService {
     suspend fun login(email: String, password: String): Result<User>
-    suspend fun signUp(name: String, email: String, phone: String, password: String): Result<User>
-    suspend fun recoverPassword(email: String): Result<Unit>
+    suspend fun signUp(name: String, email: String, phone: String, password: String, recoveryEmail: String): Result<User>
+    suspend fun recoverPassword(recoveryEmail: String): Result<PasswordRecoveryInfo>
+    suspend fun getRecoveryEmail(uniEmail: String): Result<String>
+    suspend fun getUniversityEmailByRecovery(recoveryEmail: String): Result<String>
+    suspend fun resetUserPassword(uniEmail: String, newPassword: String): Result<Boolean>
     suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>>
     suspend fun likeProfile(userId: String): Result<Match?>
     suspend fun passProfile(userId: String): Result<Unit>

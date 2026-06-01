@@ -9,7 +9,7 @@ import com.dbuconnect.data.models.*
 
 @Database(
     entities = [User::class, ProfileCard::class, Match::class, Message::class, Event::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -35,6 +35,14 @@ abstract class DBUDatabase : RoomDatabase() {
                 )
                 db.execSQL(
                     "ALTER TABLE messages ADD COLUMN status TEXT NOT NULL DEFAULT 'SENT'"
+                )
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE users ADD COLUMN recoveryEmail TEXT NOT NULL DEFAULT ''"
                 )
             }
         }

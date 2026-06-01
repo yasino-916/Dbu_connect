@@ -71,6 +71,15 @@ interface SupabaseRestApi {
     @POST("rest/v1/rpc/report_user")
     suspend fun reportUser(@Body request: ReportUserRequest)
 
+    @POST("rest/v1/rpc/get_recovery_email")
+    suspend fun getRecoveryEmail(@Body request: GetRecoveryEmailRequest): String?
+
+    @POST("rest/v1/rpc/get_university_email_by_recovery")
+    suspend fun getUniversityEmailByRecovery(@Body request: GetUniversityEmailRequest): String?
+
+    @POST("rest/v1/rpc/reset_user_password")
+    suspend fun resetUserPassword(@Body request: ResetUserPasswordRequest): Boolean
+
     @GET("rest/v1/messages")
     suspend fun getMessages(
         @Query("select") select: String = "*",

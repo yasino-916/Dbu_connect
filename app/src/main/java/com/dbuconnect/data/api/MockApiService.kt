@@ -283,29 +283,46 @@ class MockApiService @Inject constructor() : DBUApiService {
         )
     }
 
-    override suspend fun recoverPassword(email: String): Result<Unit> {
+    override suspend fun recoverPassword(recoveryEmail: String): Result<PasswordRecoveryInfo> {
         delay(500)
-        val registeredEmails = listOf(
-            "admin@dbu.edu.et",
-            "gech@dbu.edu.et",
-            "gelila@dbu.edu.et",
-            "abel@dbu.edu.et",
-            "beth@dbu.edu.et",
-            "naod@dbu.edu.et"
-        )
-        val exists = registeredEmails.any { it.equals(email.trim(), ignoreCase = true) }
-        return if (exists) {
-            Result.success(Unit)
+        // Allow any valid personal Gmail email ending with @gmail.com for seamless testing
+        val isValidEmail = recoveryEmail.trim().lowercase().endsWith("@gmail.com")
+        return if (isValidEmail) {
+            val prefix = recoveryEmail.substringBefore("@")
+            val uniEmail = "${prefix}@dbu.edu.et"
+            Result.success(PasswordRecoveryInfo(
+                universityEmail = uniEmail,
+                recoveryEmail = recoveryEmail,
+                verificationCode = "123456"
+            ))
         } else {
-            Result.failure(Exception("This email address is not registered in our database."))
+            Result.failure(Exception("This recovery email address is not registered in our database."))
         }
+    }
+
+    override suspend fun getUniversityEmailByRecovery(recoveryEmail: String): Result<String> {
+        delay(500)
+        val prefix = recoveryEmail.substringBefore("@")
+        return Result.success("${prefix}@dbu.edu.et")
+    }
+
+    override suspend fun getRecoveryEmail(uniEmail: String): Result<String> {
+        delay(500)
+        val prefix = uniEmail.substringBefore("@")
+        return Result.success("${prefix}_recovery@gmail.com")
+    }
+
+    override suspend fun resetUserPassword(uniEmail: String, newPassword: String): Result<Boolean> {
+        delay(500)
+        return Result.success(true)
     }
 
     override suspend fun signUp(
         name: String,
         email: String,
         phone: String,
-        password: String
+        password: String,
+        recoveryEmail: String
     ): Result<User> {
         delay(1200)
 
@@ -322,7 +339,8 @@ class MockApiService @Inject constructor() : DBUApiService {
                 intent = "Friends",
                 email = email,
                 phone = phone,
-                isProfileComplete = false
+                isProfileComplete = false,
+                recoveryEmail = recoveryEmail
             )
         )
     }

@@ -33,8 +33,8 @@ class AppRepository @Inject constructor(
         return result
     }
 
-    suspend fun signUp(name: String, email: String, phone: String, password: String): Result<User> {
-        val result = api.signUp(name, email, phone, password)
+    suspend fun signUp(name: String, email: String, phone: String, password: String, recoveryEmail: String): Result<User> {
+        val result = api.signUp(name, email, phone, password, recoveryEmail)
         result.onSuccess { user ->
             userDao.insertUser(user)
             dataStore.setLoggedIn(true, user.id)
@@ -43,8 +43,20 @@ class AppRepository @Inject constructor(
         return result
     }
 
-    suspend fun recoverPassword(email: String): Result<Unit> {
-        return api.recoverPassword(email)
+    suspend fun recoverPassword(recoveryEmail: String): Result<com.dbuconnect.data.api.PasswordRecoveryInfo> {
+        return api.recoverPassword(recoveryEmail)
+    }
+
+    suspend fun getRecoveryEmail(uniEmail: String): Result<String> {
+        return api.getRecoveryEmail(uniEmail)
+    }
+
+    suspend fun getUniversityEmailByRecovery(recoveryEmail: String): Result<String> {
+        return api.getUniversityEmailByRecovery(recoveryEmail)
+    }
+
+    suspend fun resetUserPassword(uniEmail: String, newPassword: String): Result<Boolean> {
+        return api.resetUserPassword(uniEmail, newPassword)
     }
 
     suspend fun logout() {

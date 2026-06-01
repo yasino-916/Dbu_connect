@@ -11,6 +11,7 @@ import com.dbuconnect.data.models.ProfileCard
 import com.dbuconnect.data.models.RsvpStatus
 import com.dbuconnect.data.models.User
 import kotlinx.coroutines.flow.first
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -36,7 +37,8 @@ class SupabaseApiService @Inject constructor(
         name: String,
         email: String,
         phone: String,
-        password: String
+        password: String,
+        recoveryEmail: String
     ): Result<User> = runCatching {
         // Attempt signup
         val authResult = runCatching {
@@ -44,7 +46,11 @@ class SupabaseApiService @Inject constructor(
                 SignUpRequest(
                     email = email,
                     password = password,
-                    data = mapOf("name" to name, "phone" to phone)
+                    data = mapOf(
+                        "name" to name,
+                        "phone" to phone,
+                        "recovery_email" to recoveryEmail
+                    )
                 )
             )
         }
@@ -57,7 +63,10 @@ class SupabaseApiService @Inject constructor(
             api.getProfiles(idFilter = "eq.${authUser.id}")
                 .firstOrNull()
                 ?.toUser()
-                ?: createProfileFromAuth(authUser.copy(metadata = mapOf("name" to name)), phone = phone)
+                ?: createProfileFromAuth(
+                    authUser.copy(metadata = mapOf("name" to name, "recovery_email" to recoveryEmail)),
+                    phone = phone
+                )
         }
         
         if (loginResult.isSuccess) {
@@ -82,12 +91,72 @@ class SupabaseApiService @Inject constructor(
         throw loginException ?: Exception("Login failed after sign up")
     }
 
-    override suspend fun recoverPassword(email: String): Result<Unit> = runCatching {
-        // Supabase prevents email enumeration by design (returns 200 for any email).
-        // We cannot reliably check if an email is registered without authentication.
-        // The real protection is at login time - if the account doesn't exist,
-        // the new password won't work anyway.
-        api.recoverPassword(RecoverRequest(email))
+    override suspend fun recoverPassword(recoveryEmail: String): Result<PasswordRecoveryInfo> = runCatching {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            // 1. Get the university email associated with this recovery email
+            val universityEmail = api.getUniversityEmailByRecovery(GetUniversityEmailRequest(recoveryEmail))
+            if (universityEmail == null || universityEmail.isBlank() || universityEmail == "null") {
+                throw Exception("This recovery email address is not registered in our database.")
+            }
+            
+            // 2. Generate a random 6-digit verification code
+            val code = (100000..999999).random().toString()
+            
+            // 3. Send email via Resend API
+            val resendKey = SupabaseConfig.resendApiKey
+            if (resendKey.isNotBlank() && !resendKey.startsWith("re_placeholder")) {
+                val client = okhttp3.OkHttpClient()
+                val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+                val json = """
+                    {
+                      "from": "DBU Connect <onboarding@resend.dev>",
+                      "to": ["$recoveryEmail"],
+                      "subject": "DBU Connect - Password Reset Verification Code",
+                      "html": "<div style='font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px; max-width: 500px;'><h3>DBU Connect Password Reset</h3><p>A request was made to reset your DBU Connect password. Use the following 6-digit verification code to complete the reset:</p><h1 style='color: #6366f1; letter-spacing: 5px; text-align: center;'>$code</h1><p>If you did not make this request, please ignore this email.</p></div>"
+                    }
+                """.trimIndent()
+                val body = okhttp3.RequestBody.create(mediaType, json)
+                val request = okhttp3.Request.Builder()
+                    .url("https://api.resend.com/emails")
+                    .post(body)
+                    .addHeader("Authorization", "Bearer $resendKey")
+                    .addHeader("Content-Type", "application/json")
+                    .addHeader("User-Agent", "DBU-Connect/1.0")
+                    .build()
+                    
+                val response = client.newCall(request).execute()
+                if (!response.isSuccessful) {
+                    val errorBody = response.body?.string() ?: ""
+                    val errorMessage = if (errorBody.contains("only send testing emails")) {
+                        val ownerEmail = errorBody.substringAfter("own email address (").substringBefore(")")
+                        "Resend Sandbox: You can only send testing emails to your Resend account owner ($ownerEmail). Verify a custom domain on Resend.com to send to other recipients."
+                    } else {
+                        "Resend API Error: $errorBody"
+                    }
+                    throw Exception(errorMessage)
+                }
+            } else {
+                android.util.Log.w("DBU_CONNECT", "Resend API key not configured. Bypassing email sending. Verification code: $code")
+            }
+            
+            PasswordRecoveryInfo(
+                universityEmail = universityEmail,
+                recoveryEmail = recoveryEmail,
+                verificationCode = code
+            )
+        }
+    }
+
+    override suspend fun getRecoveryEmail(uniEmail: String): Result<String> = runCatching {
+        api.getRecoveryEmail(GetRecoveryEmailRequest(uniEmail)) ?: ""
+    }
+
+    override suspend fun getUniversityEmailByRecovery(recoveryEmail: String): Result<String> = runCatching {
+        api.getUniversityEmailByRecovery(GetUniversityEmailRequest(recoveryEmail)) ?: ""
+    }
+
+    override suspend fun resetUserPassword(uniEmail: String, newPassword: String): Result<Boolean> = runCatching {
+        api.resetUserPassword(ResetUserPasswordRequest(uniEmail, newPassword))
     }
 
     override suspend fun getDiscoverCards(filters: FilterSettings): Result<List<ProfileCard>> = runCatching {
@@ -210,12 +279,14 @@ class SupabaseApiService @Inject constructor(
         val name = authUser.metadata?.get("name").orEmpty().ifBlank {
             authUser.email?.substringBefore("@").orEmpty()
         }
+        val recoveryEmail = authUser.metadata?.get("recovery_email").orEmpty()
         val profile = ProfileDto(
             id = authUser.id,
             name = name,
             email = authUser.email.orEmpty(),
             phone = phone,
-            isProfileComplete = false
+            isProfileComplete = false,
+            recoveryEmail = recoveryEmail
         )
 
         return api.createProfile(profile).firstOrNull()?.toUser() ?: profile.toUser()

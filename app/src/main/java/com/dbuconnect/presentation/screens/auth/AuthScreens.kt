@@ -44,6 +44,16 @@ fun LoginScreen(
         }
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            if (it.startsWith("SUCCESS:")) {
+                android.widget.Toast.makeText(context, it.substringAfter("SUCCESS:").trim(), android.widget.Toast.LENGTH_LONG).show()
+                viewModel.clearError()
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -198,17 +208,17 @@ fun LoginScreen(
                 text = {
                     Column {
                         Text(
-                            text = "Enter your registered DBU university email address. We'll send you a password recovery link.",
+                            text = "Enter the personal recovery email (@gmail.com) you registered during signup. We'll send a 6-digit verification code to it using Resend API.",
                             fontSize = 14.sp,
                             color = TextSecondary,
                             lineHeight = 20.sp
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         OutlinedTextField(
-                            value = state.email,
-                            onValueChange = { viewModel.updateEmail(it) },
+                            value = state.recoveryEmail,
+                            onValueChange = { viewModel.updateRecoveryEmail(it) },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("name@dbu.edu.et", color = TextTertiary) },
+                            placeholder = { Text("name@gmail.com", color = TextTertiary) },
                             shape = RoundedCornerShape(12.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = PrimaryGreen,
@@ -219,13 +229,13 @@ fun LoginScreen(
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                         )
-                        if (state.error != null) {
+                        if (state.error != null && !state.error!!.startsWith("SUCCESS")) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = state.error!!,
                                 fontSize = 13.sp,
                                 color = StatusError
-                            )
+                              )
                         }
                     }
                 },
@@ -235,7 +245,7 @@ fun LoginScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
                         shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Send Link", color = Color.White)
+                        Text("Send Verification Code", color = Color.White)
                     }
                 },
                 dismissButton = {
@@ -253,12 +263,8 @@ fun LoginScreen(
         }
 
         if (state.isForgotPasswordSuccess) {
-            var newPassword by remember { mutableStateOf("") }
-            var confirmNewPassword by remember { mutableStateOf("") }
             var newPasswordVisible by remember { mutableStateOf(false) }
             var confirmNewPasswordVisible by remember { mutableStateOf(false) }
-            var resetPasswordError by remember { mutableStateOf<String?>(null) }
-            var isResetComplete by remember { mutableStateOf(false) }
 
             AlertDialog(
                 onDismissRequest = {
@@ -275,7 +281,7 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = if (isResetComplete) "Success!" else "Simulated Email Bypassed",
+                            text = if (state.isCodeVerified) "Set New Password" else "Verify Recovery Code",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = TextPrimary
@@ -284,9 +290,50 @@ fun LoginScreen(
                 },
                 text = {
                     Column {
-                        if (!isResetComplete) {
+                        if (!state.isCodeVerified) {
+                            val maskedEmail = if (state.recoveryEmail.isNotBlank()) {
+                                val prefix = state.recoveryEmail.substringBefore("@")
+                                val suffix = state.recoveryEmail.substringAfter("@")
+                                val mask = if (prefix.length > 2) "${prefix.take(2)}••••" else "••••"
+                                "$mask@$suffix"
+                            } else {
+                                "your recovery email"
+                            }
                             Text(
-                                text = "📬 Since '@dbu.edu.et' is a simulated university domain, we have bypassed the email inbox step and unlocked your secure password reset form directly here!",
+                                text = "📬 We found a recovery email ending in @gmail.com associated with your university account: $maskedEmail.\n\nA 6-digit verification code has been sent to it using Resend API.",
+                                fontSize = 13.sp,
+                                color = TextSecondary,
+                                lineHeight = 18.sp
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text("Verification Code", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = state.enteredCode,
+                                onValueChange = { viewModel.updateEnteredCode(it) },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = { Text("123456", color = TextTertiary) },
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = PrimaryGreen,
+                                    unfocusedBorderColor = BorderDefault,
+                                    focusedContainerColor = BackgroundWhite,
+                                    unfocusedContainerColor = BackgroundWhite
+                                ),
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            )
+                            if (state.error != null && !state.error!!.startsWith("SUCCESS")) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = state.error!!,
+                                    fontSize = 12.sp,
+                                    color = StatusError
+                                )
+                            }
+                        } else {
+                            Text(
+                                text = "Verification successful! Please choose a new secure password.",
                                 fontSize = 13.sp,
                                 color = TextSecondary,
                                 lineHeight = 18.sp
@@ -297,8 +344,8 @@ fun LoginScreen(
                             Text("New Password", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
                             Spacer(modifier = Modifier.height(4.dp))
                             OutlinedTextField(
-                                value = newPassword,
-                                onValueChange = { newPassword = it; resetPasswordError = null },
+                                value = state.newPasswordText,
+                                onValueChange = { viewModel.updateNewPasswordText(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = { Text("••••••••", color = TextTertiary) },
                                 shape = RoundedCornerShape(12.dp),
@@ -326,8 +373,8 @@ fun LoginScreen(
                             Text("Confirm Password", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
                             Spacer(modifier = Modifier.height(4.dp))
                             OutlinedTextField(
-                                value = confirmNewPassword,
-                                onValueChange = { confirmNewPassword = it; resetPasswordError = null },
+                                value = state.confirmNewPasswordText,
+                                onValueChange = { viewModel.updateConfirmNewPasswordText(it) },
                                 modifier = Modifier.fillMaxWidth(),
                                 placeholder = { Text("••••••••", color = TextTertiary) },
                                 shape = RoundedCornerShape(12.dp),
@@ -349,65 +396,49 @@ fun LoginScreen(
                                 singleLine = true
                             )
                             
-                            if (resetPasswordError != null) {
+                            if (state.error != null && !state.error!!.startsWith("SUCCESS")) {
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = resetPasswordError!!,
+                                    text = state.error!!,
                                     fontSize = 12.sp,
                                     color = StatusError
                                 )
                             }
-                        } else {
-                            Text(
-                                text = "Your password has been successfully updated in our system database! We have automatically filled your new password on the login screen so you can sign in instantly.",
-                                fontSize = 14.sp,
-                                color = TextSecondary,
-                                lineHeight = 20.sp
-                            )
                         }
                     }
                 },
                 confirmButton = {
-                    if (!isResetComplete) {
+                    if (!state.isCodeVerified) {
                         Button(
-                            onClick = {
-                                if (newPassword.length < 6) {
-                                    resetPasswordError = "Password must be at least 6 characters"
-                                } else if (newPassword != confirmNewPassword) {
-                                    resetPasswordError = "Passwords do not match"
-                                } else {
-                                    viewModel.updatePassword(newPassword)
-                                    isResetComplete = true
-                                }
-                            },
+                            onClick = { viewModel.verifyRecoveryCode() },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            enabled = state.enteredCode.trim().length == 6
                         ) {
-                            Text("Update Password", color = Color.White)
+                            Text("Verify Code", color = Color.White)
                         }
                     } else {
                         Button(
                             onClick = {
-                                viewModel.resetForgotPasswordSuccess()
+                                viewModel.updatePasswordInDatabase()
                                 showForgotPasswordDialog = false
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            enabled = state.newPasswordText.isNotBlank() && state.confirmNewPasswordText.isNotBlank()
                         ) {
-                            Text("Sign In Now", color = Color.White)
+                            Text("Reset Password", color = Color.White)
                         }
                     }
                 },
                 dismissButton = {
-                    if (!isResetComplete) {
-                        TextButton(
-                            onClick = {
-                                viewModel.resetForgotPasswordSuccess()
-                                showForgotPasswordDialog = false
-                            }
-                        ) {
-                            Text("Cancel", color = TextSecondary)
+                    TextButton(
+                        onClick = {
+                            viewModel.resetForgotPasswordSuccess()
+                            showForgotPasswordDialog = false
                         }
+                    ) {
+                        Text("Cancel", color = TextSecondary)
                     }
                 },
                 containerColor = BackgroundWhite
@@ -564,6 +595,25 @@ fun SignUpScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Use your @dbu.edu.et email address",
+                        fontSize = 12.sp,
+                        color = TextTertiary
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Recovery Email
+                    FormField(
+                        label = "Recovery Email (for password resets)",
+                        value = state.recoveryEmail,
+                        onValueChange = { viewModel.updateRecoveryEmail(it) },
+                        placeholder = "name@gmail.com",
+                        leadingIcon = Icons.Outlined.Email,
+                        keyboardType = KeyboardType.Email
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Must be a personal email ending in @gmail.com",
                         fontSize = 12.sp,
                         color = TextTertiary
                     )

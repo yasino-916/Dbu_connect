@@ -15,8 +15,16 @@ val localProperties = Properties().apply {
     }
 }
 
+val envProperties = Properties().apply {
+    val file = rootProject.file(".env")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
 fun configValue(name: String): String {
-    return localProperties.getProperty(name)
+    return envProperties.getProperty(name)
+        ?: localProperties.getProperty(name)
         ?: providers.environmentVariable(name).orNull
         ?: ""
 }
@@ -35,6 +43,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "SUPABASE_URL", "\"${configValue("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${configValue("SUPABASE_ANON_KEY")}\"")
+        buildConfigField("String", "RESEND_API_KEY", "\"${configValue("RESEND_API_KEY")}\"")
     }
 
     buildTypes {

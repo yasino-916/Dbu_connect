@@ -17,7 +17,8 @@ data class User(
     val email: String = "",
     val phone: String = "",
     val isProfileComplete: Boolean = false,
-    val isAdmin: Boolean = false
+    val isAdmin: Boolean = false,
+    val recoveryEmail: String = ""
 )
 
 @Entity(tableName = "profile_cards")

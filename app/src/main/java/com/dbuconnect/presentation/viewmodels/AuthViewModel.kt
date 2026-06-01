@@ -15,6 +15,12 @@ data class AuthState(
     val password: String = "",
     val name: String = "",
     val phone: String = "",
+    val recoveryEmail: String = "",
+    val recoveryCode: String = "",
+    val enteredCode: String = "",
+    val isCodeVerified: Boolean = false,
+    val newPasswordText: String = "",
+    val confirmNewPasswordText: String = "",
     val isLoading: Boolean = false,
     val error: String? = null,
     val user: User? = null,
@@ -95,6 +101,22 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun updateRecoveryEmail(recoveryEmail: String) {
+        _state.update { it.copy(recoveryEmail = recoveryEmail, error = null) }
+    }
+
+    fun updateEnteredCode(code: String) {
+        _state.update { it.copy(enteredCode = code, error = null) }
+    }
+
+    fun updateNewPasswordText(pass: String) {
+        _state.update { it.copy(newPasswordText = pass, error = null) }
+    }
+
+    fun updateConfirmNewPasswordText(pass: String) {
+        _state.update { it.copy(confirmNewPasswordText = pass, error = null) }
+    }
+
     fun signUp() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
@@ -102,6 +124,7 @@ class AuthViewModel @Inject constructor(
             val email = _state.value.email.trim()
             val password = _state.value.password
             val name = _state.value.name
+            val recoveryEmail = _state.value.recoveryEmail.trim()
 
             // Validate name
             if (name.isBlank()) {
@@ -120,6 +143,17 @@ class AuthViewModel @Inject constructor(
                 return@launch
             }
 
+            // Validate recovery email ends with @gmail.com
+            if (recoveryEmail.isBlank() || !recoveryEmail.lowercase().endsWith("@gmail.com")) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Please provide a valid personal recovery email ending with @gmail.com for password resets"
+                    )
+                }
+                return@launch
+            }
+
             if (password.length < 6) {
                 _state.update {
                     it.copy(
@@ -130,7 +164,7 @@ class AuthViewModel @Inject constructor(
                 return@launch
             }
 
-            val result = repository.signUp(name.trim(), email, _state.value.phone.trim(), password)
+            val result = repository.signUp(name.trim(), email, _state.value.phone.trim(), password, recoveryEmail)
             result.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
@@ -156,8 +190,9 @@ class AuthViewModel @Inject constructor(
                 return@launch
             }
             
-            // If user doesn't exist, sign up first
-            val signUpResult = repository.signUp(name, email, "", password)
+            // If user doesn't exist, sign up first (Google email acts as recovery email fallback)
+            val recoveryEmail = if (email.lowercase().endsWith("@gmail.com")) email else "${email.substringBefore("@")}@gmail.com"
+            val signUpResult = repository.signUp(name, email, "", password, recoveryEmail)
             signUpResult.onSuccess { user ->
                 _state.update { it.copy(isLoading = false, user = user, isLoggedIn = true) }
             }.onFailure { error ->
@@ -210,29 +245,103 @@ class AuthViewModel @Inject constructor(
     fun recoverPassword() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            val email = _state.value.email.trim()
+            val recoveryEmail = _state.value.recoveryEmail.trim()
 
-            if (!isValidDBUEmail(email)) {
+            if (recoveryEmail.isBlank() || !recoveryEmail.lowercase().endsWith("@gmail.com")) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = "Please use your university email (e.g., name@dbu.edu.et)"
+                        error = "Please provide a valid personal recovery email (e.g., name@gmail.com) registered with your account."
                     )
                 }
                 return@launch
             }
 
-            val result = repository.recoverPassword(email)
-            result.onSuccess {
-                _state.update { it.copy(isLoading = false, isForgotPasswordSuccess = true) }
+            val result = repository.recoverPassword(recoveryEmail)
+            result.onSuccess { info ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        isForgotPasswordSuccess = true,
+                        email = info.universityEmail,
+                        recoveryEmail = info.recoveryEmail,
+                        recoveryCode = info.verificationCode,
+                        isCodeVerified = false,
+                        enteredCode = ""
+                    )
+                }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Failed to send reset link")) }
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Failed to initiate password recovery")) }
+            }
+        }
+    }
+
+    fun verifyRecoveryCode() {
+        val entered = _state.value.enteredCode.trim()
+        val code = _state.value.recoveryCode.trim()
+        if (entered.length == 6 && entered == code) {
+            _state.update { it.copy(isCodeVerified = true, error = null) }
+        } else {
+            _state.update { it.copy(error = "Invalid 6-digit verification code. Please try again.") }
+        }
+    }
+
+    fun updatePasswordInDatabase() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+            val email = _state.value.email.trim()
+            val newPass = _state.value.newPasswordText
+            val confirmPass = _state.value.confirmNewPasswordText
+
+            if (newPass.length < 6) {
+                _state.update { it.copy(isLoading = false, error = "Password must be at least 6 characters") }
+                return@launch
+            }
+
+            if (newPass != confirmPass) {
+                _state.update { it.copy(isLoading = false, error = "Passwords do not match") }
+                return@launch
+            }
+
+            val result = repository.resetUserPassword(email, newPass)
+            result.onSuccess { success ->
+                if (success) {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isForgotPasswordSuccess = false,
+                            isCodeVerified = false,
+                            recoveryEmail = "",
+                            recoveryCode = "",
+                            enteredCode = "",
+                            newPasswordText = "",
+                            confirmNewPasswordText = "",
+                            error = null
+                        )
+                    }
+                    // Trigger a custom error text/message so the UI can display success
+                    _state.update { it.copy(error = "SUCCESS: Your password has been updated! Please login with your new password.") }
+                } else {
+                    _state.update { it.copy(isLoading = false, error = "Account password reset failed. Account not found.") }
+                }
+            }.onFailure { error ->
+                _state.update { it.copy(isLoading = false, error = getUserFriendlyErrorMessage(error, "Failed to reset password")) }
             }
         }
     }
 
     fun resetForgotPasswordSuccess() {
-        _state.update { it.copy(isForgotPasswordSuccess = false) }
+        _state.update {
+            it.copy(
+                isForgotPasswordSuccess = false,
+                isCodeVerified = false,
+                recoveryEmail = "",
+                recoveryCode = "",
+                enteredCode = "",
+                newPasswordText = "",
+                confirmNewPasswordText = ""
+            )
+        }
     }
 
     fun clearError() {

@@ -24,6 +24,19 @@ data class RecoverRequest(
     val email: String
 )
 
+data class GetRecoveryEmailRequest(
+    @SerializedName("uni_email") val uniEmail: String
+)
+
+data class GetUniversityEmailRequest(
+    @SerializedName("rec_email") val recEmail: String
+)
+
+data class ResetUserPasswordRequest(
+    @SerializedName("uni_email") val uniEmail: String,
+    @SerializedName("new_password") val newPassword: String
+)
+
 data class SupabaseAuthResponse(
     @SerializedName("access_token") val accessToken: String?,
     val user: SupabaseAuthUser?
@@ -71,7 +84,8 @@ data class ProfileDto(
     val email: String = "",
     val phone: String = "",
     @SerializedName("is_profile_complete") val isProfileComplete: Boolean = false,
-    @SerializedName("is_admin") val isAdmin: Boolean = false
+    @SerializedName("is_admin") val isAdmin: Boolean = false,
+    @SerializedName("recovery_email") val recoveryEmail: String = ""
 ) {
     fun toUser(): User = User(
         id = id,
@@ -86,7 +100,8 @@ data class ProfileDto(
         email = email,
         phone = phone,
         isProfileComplete = isProfileComplete,
-        isAdmin = isAdmin
+        isAdmin = isAdmin,
+        recoveryEmail = recoveryEmail
     )
 
     fun toProfileCard(): ProfileCard = ProfileCard(
@@ -116,7 +131,8 @@ fun User.toProfileDto(): ProfileDto = ProfileDto(
     email = email,
     phone = phone,
     isProfileComplete = isProfileComplete,
-    isAdmin = isAdmin
+    isAdmin = isAdmin,
+    recoveryEmail = recoveryEmail
 )
 
 data class EventDto(
