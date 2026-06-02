@@ -36,7 +36,7 @@ object AppModule {
             "dbu_connect_db"
         )
             // Issue #23: Use explicit migrations instead of destructive fallback
-            .addMigrations(DBUDatabase.MIGRATION_1_2, DBUDatabase.MIGRATION_2_3)
+            .addMigrations(DBUDatabase.MIGRATION_1_2, DBUDatabase.MIGRATION_2_3, DBUDatabase.MIGRATION_3_4)
             .build()
     }
 
@@ -54,6 +54,9 @@ object AppModule {
 
     @Provides
     fun provideEventDao(db: DBUDatabase): EventDao = db.eventDao()
+
+    @Provides
+    fun provideNotificationDao(db: DBUDatabase): NotificationDao = db.notificationDao()
 
     @Volatile
     private var cachedToken: String? = null

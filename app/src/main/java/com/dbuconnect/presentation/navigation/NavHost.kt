@@ -23,6 +23,7 @@ import androidx.navigation.navArgument
 import com.dbuconnect.presentation.screens.auth.LoginScreen
 import com.dbuconnect.presentation.screens.auth.SignUpScreen
 import com.dbuconnect.presentation.screens.chat.ChatScreen
+import com.dbuconnect.presentation.screens.chat.VideoCallScreen
 import com.dbuconnect.presentation.screens.discover.DiscoverScreen
 import com.dbuconnect.presentation.screens.discover.FiltersScreen
 import com.dbuconnect.presentation.screens.events.EventsScreen
@@ -250,6 +251,22 @@ fun DBUConnectNavHost(
                 arguments = listOf(navArgument("matchId") { type = NavType.StringType })
             ) { backStackEntry ->
                 ChatScreen(
+                    onBack = { navController.popBackStack() },
+                    onStartVideoCall = { matchId ->
+                        navController.navigate(Screen.VideoCall.createRoute(matchId, true))
+                    }
+                )
+            }
+
+            // Video Call
+            composable(
+                route = Screen.VideoCall.route,
+                arguments = listOf(
+                    navArgument("matchId") { type = NavType.StringType },
+                    navArgument("isOutgoing") { type = NavType.BoolType }
+                )
+            ) {
+                VideoCallScreen(
                     onBack = { navController.popBackStack() }
                 )
             }

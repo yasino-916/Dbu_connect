@@ -107,7 +107,7 @@ data class ProfileDto(
     fun toProfileCard(): ProfileCard = ProfileCard(
         id = id,
         userId = id,
-        photoUrl = photos.firstOrNull().orEmpty(),
+        photoUrl = getValidPhotoUrl(photos.firstOrNull(), id, name),
         name = name,
         age = age,
         department = department,
@@ -195,7 +195,7 @@ data class MatchDto(
         userAId = userAId,
         userBId = userBId,
         userName = userName,
-        userPhotoUrl = userPhotoUrl,
+        userPhotoUrl = getValidPhotoUrl(userPhotoUrl, id, userName),
         createdAt = createdAt,
         isNew = isNew,
         lastMessage = lastMessage,
@@ -231,3 +231,28 @@ fun Message.toMessageDto(): MessageDto = MessageDto(
     timestamp = timestamp,
     status = status.name
 )
+
+fun getFallbackPhotoUrl(id: String, name: String): String {
+    val fallbackPhotos = listOf(
+        "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500",
+        "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500",
+        "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=500",
+        "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=500",
+        "https://images.unsplash.com/photo-1534751516642-a131ffd10b7f?w=500",
+        "https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=500",
+        "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?w=500",
+        "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=500",
+        "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=500",
+        "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=500"
+    )
+    val hash = kotlin.math.abs(id.hashCode() + name.hashCode())
+    val index = hash % fallbackPhotos.size
+    return fallbackPhotos[index]
+}
+
+fun getValidPhotoUrl(url: String?, id: String, name: String): String {
+    if (url.isNullOrBlank() || url.startsWith("content://") || url.startsWith("file://") || !url.startsWith("http")) {
+        return getFallbackPhotoUrl(id, name)
+    }
+    return url
+}

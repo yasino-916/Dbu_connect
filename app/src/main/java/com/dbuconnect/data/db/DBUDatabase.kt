@@ -8,8 +8,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.dbuconnect.data.models.*
 
 @Database(
-    entities = [User::class, ProfileCard::class, Match::class, Message::class, Event::class],
-    version = 3,
+    entities = [User::class, ProfileCard::class, Match::class, Message::class, Event::class, Notification::class],
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -19,6 +19,7 @@ abstract class DBUDatabase : RoomDatabase() {
     abstract fun matchDao(): MatchDao
     abstract fun messageDao(): MessageDao
     abstract fun eventDao(): EventDao
+    abstract fun notificationDao(): NotificationDao
 
     companion object {
         /**
@@ -43,6 +44,25 @@ abstract class DBUDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL(
                     "ALTER TABLE users ADD COLUMN recoveryEmail TEXT NOT NULL DEFAULT ''"
+                )
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS notifications (
+                        id TEXT NOT NULL PRIMARY KEY,
+                        type TEXT NOT NULL,
+                        title TEXT NOT NULL,
+                        message TEXT NOT NULL,
+                        fromUserId TEXT NOT NULL DEFAULT '',
+                        fromUserName TEXT NOT NULL DEFAULT '',
+                        fromUserPhoto TEXT NOT NULL DEFAULT '',
+                        relatedId TEXT NOT NULL DEFAULT '',
+                        timestamp INTEGER NOT NULL,
+                        isRead INTEGER NOT NULL DEFAULT 0
+                    )"""
                 )
             }
         }

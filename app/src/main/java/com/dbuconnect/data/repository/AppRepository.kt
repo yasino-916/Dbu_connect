@@ -20,7 +20,8 @@ class AppRepository @Inject constructor(
     private val profileCardDao: ProfileCardDao,
     private val matchDao: MatchDao,
     private val messageDao: MessageDao,
-    private val eventDao: EventDao
+    private val eventDao: EventDao,
+    private val notificationDao: NotificationDao
 ) {
     // Auth
     suspend fun login(email: String, password: String): Result<User> {
@@ -66,6 +67,7 @@ class AppRepository @Inject constructor(
         messageDao.deleteAll()
         eventDao.deleteAll()
         profileCardDao.deleteAll()
+        notificationDao.deleteAll()
     }
 
     val isLoggedIn: Flow<Boolean> = dataStore.isLoggedIn
@@ -213,5 +215,29 @@ class AppRepository @Inject constructor(
 
     suspend fun updateFilterSettings(settings: FilterSettings) {
         dataStore.updateFilterSettings(settings)
+    }
+
+    // Notifications
+    fun observeNotifications(): Flow<List<Notification>> = notificationDao.observeNotifications()
+    fun observeUnreadNotificationCount(): Flow<Int> = notificationDao.observeUnreadCount()
+
+    suspend fun addNotification(notification: Notification) {
+        notificationDao.insertNotification(notification)
+    }
+
+    suspend fun getNotificationsDirectly(): List<Notification> {
+        return notificationDao.getAllNotifications()
+    }
+
+    suspend fun refreshNotifications() {
+        // Notifications are locally managed; no remote fetch needed
+    }
+
+    suspend fun markNotificationAsRead(id: String) {
+        notificationDao.markAsRead(id)
+    }
+
+    suspend fun markAllNotificationsAsRead() {
+        notificationDao.markAllAsRead()
     }
 }

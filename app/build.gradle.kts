@@ -112,6 +112,11 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // CameraX
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
+
     // DataStore
     implementation(libs.datastore.preferences)
 

@@ -27,6 +27,7 @@ import com.dbuconnect.presentation.components.DBUChip
 import com.dbuconnect.presentation.screens.onboarding.DBULogo
 import com.dbuconnect.presentation.theme.*
 import com.dbuconnect.presentation.viewmodels.ProfileViewModel
+import com.dbuconnect.data.api.getValidPhotoUrl
 
 @Composable
 fun ProfileScreen(
@@ -74,8 +75,11 @@ fun ProfileScreen(
             // Profile photo
             Box {
                 AsyncImage(
-                    model = state.user?.photos?.firstOrNull()
-                        ?: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200",
+                    model = getValidPhotoUrl(
+                        state.user?.photos?.firstOrNull(),
+                        state.user?.id ?: "",
+                        state.user?.name ?: ""
+                    ),
                     contentDescription = "Profile photo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

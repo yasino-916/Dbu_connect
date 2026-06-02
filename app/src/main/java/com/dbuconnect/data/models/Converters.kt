@@ -27,4 +27,10 @@ class Converters {
 
     @TypeConverter
     fun toRsvpStatus(value: String): RsvpStatus = RsvpStatus.valueOf(value)
+
+    @TypeConverter
+    fun fromNotificationType(type: NotificationType): String = type.name
+
+    @TypeConverter
+    fun toNotificationType(value: String): NotificationType = NotificationType.valueOf(value)
 }

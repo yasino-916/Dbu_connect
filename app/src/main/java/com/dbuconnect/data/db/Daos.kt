@@ -108,3 +108,30 @@ interface EventDao {
     @Query("DELETE FROM events")
     suspend fun deleteAll()
 }
+
+@Dao
+interface NotificationDao {
+    @Query("SELECT * FROM notifications ORDER BY timestamp DESC")
+    fun observeNotifications(): Flow<List<Notification>>
+
+    @Query("SELECT COUNT(*) FROM notifications WHERE isRead = 0")
+    fun observeUnreadCount(): Flow<Int>
+
+    @Query("SELECT * FROM notifications")
+    suspend fun getAllNotifications(): List<Notification>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertNotification(notification: Notification)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertNotifications(notifications: List<Notification>)
+
+    @Query("UPDATE notifications SET isRead = 1 WHERE id = :id")
+    suspend fun markAsRead(id: String)
+
+    @Query("UPDATE notifications SET isRead = 1")
+    suspend fun markAllAsRead()
+
+    @Query("DELETE FROM notifications")
+    suspend fun deleteAll()
+}

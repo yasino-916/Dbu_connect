@@ -29,6 +29,9 @@ sealed class Screen(val route: String) {
     data object MatchSuccess : Screen("match_success/{matchId}") {
         fun createRoute(matchId: String) = "match_success/$matchId"
     }
+    data object VideoCall : Screen("video_call/{matchId}/{isOutgoing}") {
+        fun createRoute(matchId: String, isOutgoing: Boolean) = "video_call/$matchId/$isOutgoing"
+    }
 }
 
 enum class BottomNavItem(

@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import com.dbuconnect.presentation.components.PrimaryButton
 import com.dbuconnect.presentation.components.SecondaryButton
 import com.dbuconnect.presentation.theme.*
+import com.dbuconnect.data.api.getValidPhotoUrl
 
 /**
  * Issue #13: matchName, matchPhotoUrl, and currentUserPhotoUrl are now parameters
@@ -34,12 +35,8 @@ fun MatchSuccessScreen(
     onSendMessage: () -> Unit,
     onKeepBrowsing: () -> Unit
 ) {
-    val matchPhoto = matchPhotoUrl.ifBlank {
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=200"
-    }
-    val userPhoto = currentUserPhotoUrl.ifBlank {
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200"
-    }
+    val matchPhoto = getValidPhotoUrl(matchPhotoUrl, "match", matchName)
+    val userPhoto = getValidPhotoUrl(currentUserPhotoUrl, "current_user", "Me")
 
     Box(
         modifier = Modifier

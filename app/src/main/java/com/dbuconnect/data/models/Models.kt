@@ -95,3 +95,27 @@ data class FilterSettings(
     val yearRange: IntRange = 1..5,
     val intent: String = ""
 )
+
+enum class NotificationType {
+    MUTUAL_LIKE,
+    NEW_MESSAGE,
+    PROFILE_LIKED,
+    EVENT_REMINDER,
+    INCOMING_CALL,
+    CALL_ACCEPTED,
+    CALL_REJECTED
+}
+
+@Entity(tableName = "notifications")
+data class Notification(
+    @PrimaryKey val id: String,
+    val type: NotificationType,
+    val title: String,
+    val message: String,
+    val fromUserId: String = "",
+    val fromUserName: String = "",
+    val fromUserPhoto: String = "",
+    val relatedId: String = "",
+    val timestamp: Long,
+    val isRead: Boolean = false
+)

@@ -33,6 +33,7 @@ import com.dbuconnect.presentation.viewmodels.ChatViewModel
 @Composable
 fun ChatScreen(
     onBack: () -> Unit,
+    onStartVideoCall: (String) -> Unit,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -85,6 +86,9 @@ fun ChatScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { if (state.matchId.isNotEmpty()) onStartVideoCall(state.matchId) }) {
+                        Icon(Icons.Filled.Videocam, contentDescription = "Video Call", tint = PrimaryGreen)
+                    }
                     Box {
                         IconButton(onClick = { showMenu = true }) {
                             Icon(Icons.Filled.MoreVert, contentDescription = "More", tint = TextPrimary)

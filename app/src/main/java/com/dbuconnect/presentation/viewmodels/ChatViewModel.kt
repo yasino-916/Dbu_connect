@@ -48,11 +48,17 @@ class ChatViewModel @Inject constructor(
     private fun startMessagePolling() {
         pollingJob?.cancel()
         pollingJob = viewModelScope.launch {
+            var isFirst = true
             while (true) {
                 try {
                     repository.refreshMessages(matchId)
                 } catch (e: Exception) {
                     e.printStackTrace()
+                } finally {
+                    if (isFirst) {
+                        isFirst = false
+                        _state.update { it.copy(isLoading = false) }
+                    }
                 }
                 kotlinx.coroutines.delay(3000) // Poll every 3 seconds
             }
