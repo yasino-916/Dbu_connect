@@ -273,7 +273,7 @@ class MockApiService @Inject constructor() : DBUApiService {
                 department = "Computer Science",
                 year = 3,
                 bio = if (isAdmin) "DBU Connect Administrator" else "Love coding and campus life!",
-                photos = listOf("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400"),
+                photos = listOf("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400"),
                 interests = listOf("Coffee", "Sports", "Music", "Studying", "Volunteering"),
                 intent = "Friends",
                 email = email,

@@ -103,7 +103,7 @@ class ProfileViewModel @Inject constructor(
             updateYear(3)
         }
         if (current.editPhotos.isEmpty()) {
-            updatePhotos(listOf("https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=120"))
+            updatePhotos(listOf("https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500"))
         }
 
         return true
