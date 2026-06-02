@@ -28,4 +28,8 @@ interface DBUApiService {
     suspend fun updatePrivacy(settings: PrivacySettings): Result<Unit>
     suspend fun reportUser(userId: String, reason: String, details: String = ""): Result<Unit>
     suspend fun blockUser(userId: String): Result<Unit>
+    suspend fun markMessagesAsRead(chatId: String, currentUserId: String): Result<Unit>
+    suspend fun getNotifications(): Result<List<Notification>>
+    suspend fun markNotificationAsReadRemote(id: String): Result<Unit>
+    suspend fun markAllNotificationsAsReadRemote(userId: String): Result<Unit>
 }

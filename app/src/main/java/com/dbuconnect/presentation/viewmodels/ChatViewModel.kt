@@ -52,6 +52,7 @@ class ChatViewModel @Inject constructor(
             while (true) {
                 try {
                     repository.refreshMessages(matchId)
+                    repository.markMessagesAsRead(matchId)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {

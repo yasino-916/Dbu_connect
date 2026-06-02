@@ -90,4 +90,26 @@ interface SupabaseRestApi {
     @Headers("Prefer: return=representation")
     @POST("rest/v1/messages")
     suspend fun createMessage(@Body message: MessageDto): List<MessageDto>
+
+    @PATCH("rest/v1/messages")
+    suspend fun updateMessagesStatus(
+        @Query("chat_id") chatFilter: String,
+        @Query("sender_id") senderFilter: String,
+        @Body updates: Map<String, String>
+    )
+
+    @POST("rest/v1/rpc/get_notifications_for_current_user")
+    suspend fun getNotifications(): List<NotificationDto>
+
+    @PATCH("rest/v1/notifications")
+    suspend fun updateNotification(
+        @Query("id") idFilter: String,
+        @Body updates: Map<String, Boolean>
+    )
+
+    @PATCH("rest/v1/notifications")
+    suspend fun markAllNotificationsAsRead(
+        @Query("user_id") userIdFilter: String,
+        @Body updates: Map<String, Boolean>
+    )
 }

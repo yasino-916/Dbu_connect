@@ -442,4 +442,40 @@ class MockApiService @Inject constructor() : DBUApiService {
         delay(300)
         return Result.success(Unit)
     }
+
+    override suspend fun markMessagesAsRead(chatId: String, currentUserId: String): Result<Unit> {
+        delay(100)
+        return Result.success(Unit)
+    }
+
+    override suspend fun getNotifications(): Result<List<Notification>> = Result.success(
+        listOf(
+            Notification(
+                id = "notif_1",
+                type = NotificationType.MUTUAL_LIKE,
+                title = "It's a Match! 🎉",
+                message = "You and Gelila liked each other! Start chatting now.",
+                fromUserId = "user_0",
+                fromUserName = "Gelila",
+                fromUserPhoto = "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500",
+                timestamp = System.currentTimeMillis() - 600000,
+                isRead = false
+            ),
+            Notification(
+                id = "notif_2",
+                type = NotificationType.NEW_MESSAGE,
+                title = "Gelila",
+                message = "It was good! Yours?",
+                fromUserId = "user_0",
+                fromUserName = "Gelila",
+                fromUserPhoto = "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=500",
+                timestamp = System.currentTimeMillis() - 540000,
+                isRead = false
+            )
+        )
+    )
+
+    override suspend fun markNotificationAsReadRemote(id: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun markAllNotificationsAsReadRemote(userId: String): Result<Unit> = Result.success(Unit)
 }

@@ -28,6 +28,7 @@ import com.dbuconnect.presentation.components.AppTopBar
 import com.dbuconnect.presentation.components.EmptyState
 import com.dbuconnect.presentation.theme.*
 import com.dbuconnect.presentation.viewmodels.MatchesViewModel
+import com.dbuconnect.presentation.viewmodels.NotificationsViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -36,18 +37,43 @@ import java.util.*
 fun MatchesScreen(
     onChatClick: (String) -> Unit,
     onDiscoverClick: () -> Unit,
-    viewModel: MatchesViewModel = hiltViewModel()
+    onNavigateToNotifications: () -> Unit,
+    viewModel: MatchesViewModel = hiltViewModel(),
+    notificationsViewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val newMatches by viewModel.newMatches.collectAsState()
     val chats by viewModel.chats.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val unreadNotificationsCount by notificationsViewModel.unreadCount.collectAsState()
 
     Scaffold(
         topBar = {
             AppTopBar(
                 title = "DBU Connect",
-                actions = {}
+                actions = {
+                    BadgedBox(
+                        badge = {
+                            if (unreadNotificationsCount > 0) {
+                                Badge(
+                                    containerColor = AccentPink,
+                                    contentColor = Color.White
+                                ) {
+                                    Text(text = "$unreadNotificationsCount")
+                                }
+                            }
+                        },
+                        modifier = Modifier.padding(end = 12.dp)
+                    ) {
+                        IconButton(onClick = onNavigateToNotifications) {
+                            Icon(
+                                Icons.Outlined.Notifications,
+                                contentDescription = "Notifications",
+                                tint = TextSecondary
+                            )
+                        }
+                    }
+                }
             )
         },
         containerColor = BackgroundWhite

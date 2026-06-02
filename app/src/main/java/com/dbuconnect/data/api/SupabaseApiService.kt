@@ -10,6 +10,8 @@ import com.dbuconnect.data.models.PrivacySettings
 import com.dbuconnect.data.models.ProfileCard
 import com.dbuconnect.data.models.RsvpStatus
 import com.dbuconnect.data.models.User
+import com.dbuconnect.data.models.Notification
+import com.dbuconnect.data.models.NotificationType
 import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import java.util.UUID
@@ -273,6 +275,28 @@ class SupabaseApiService @Inject constructor(
 
     override suspend fun blockUser(userId: String): Result<Unit> = runCatching {
         api.blockUser(ProfileActionRequest(userId))
+    }
+
+    override suspend fun markMessagesAsRead(chatId: String, currentUserId: String): Result<Unit> = runCatching {
+        if (!chatId.startsWith("match_")) {
+            api.updateMessagesStatus(
+                chatFilter = "eq.$chatId",
+                senderFilter = "neq.$currentUserId",
+                updates = mapOf("status" to "READ")
+            )
+        }
+    }
+
+    override suspend fun getNotifications(): Result<List<Notification>> = runCatching {
+        api.getNotifications().map { it.toNotification() }
+    }
+
+    override suspend fun markNotificationAsReadRemote(id: String): Result<Unit> = runCatching {
+        api.updateNotification("eq.$id", mapOf("is_read" to true))
+    }
+
+    override suspend fun markAllNotificationsAsReadRemote(userId: String): Result<Unit> = runCatching {
+        api.markAllNotificationsAsRead("eq.$userId", mapOf("is_read" to true))
     }
 
     private suspend fun createProfileFromAuth(authUser: SupabaseAuthUser, phone: String): User {

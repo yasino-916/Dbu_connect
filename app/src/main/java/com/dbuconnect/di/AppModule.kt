@@ -58,9 +58,6 @@ object AppModule {
     @Provides
     fun provideNotificationDao(db: DBUDatabase): NotificationDao = db.notificationDao()
 
-    @Volatile
-    private var cachedToken: String? = null
-
     @Provides
     @Singleton
     fun provideSupabaseOkHttpClient(dataStore: AppDataStore): OkHttpClient {
@@ -70,21 +67,15 @@ object AppModule {
 
         return OkHttpClient.Builder()
             .addInterceptor { chain ->
-                // Only refresh the token if we don't have one cached
-                val token = cachedToken ?: runBlocking {
-                    dataStore.authToken.first().also { cachedToken = it }
+                val token = runBlocking {
+                    dataStore.authToken.first()
                 }
                 val bearer = token ?: SupabaseConfig.anonKey
                 val request = chain.request().newBuilder()
                     .addHeader("apikey", SupabaseConfig.anonKey)
                     .addHeader("Authorization", "Bearer $bearer")
                     .build()
-                val response = chain.proceed(request)
-                // If we get 401, invalidate cache so next request fetches fresh token
-                if (response.code == 401) {
-                    cachedToken = null
-                }
-                response
+                chain.proceed(request)
             }
             .addInterceptor(logging)
             .build()

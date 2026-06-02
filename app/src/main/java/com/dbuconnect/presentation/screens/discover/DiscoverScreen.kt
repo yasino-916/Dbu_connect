@@ -31,6 +31,7 @@ import com.dbuconnect.presentation.common.UiState
 import com.dbuconnect.presentation.components.DBUChip
 import com.dbuconnect.presentation.theme.*
 import com.dbuconnect.presentation.viewmodels.DiscoverViewModel
+import com.dbuconnect.presentation.viewmodels.NotificationsViewModel
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -39,11 +40,14 @@ import kotlin.math.roundToInt
 fun DiscoverScreen(
     onOpenFilters: () -> Unit,
     onMatchFound: (String) -> Unit,
-    viewModel: DiscoverViewModel = hiltViewModel()
+    onNavigateToNotifications: () -> Unit,
+    viewModel: DiscoverViewModel = hiltViewModel(),
+    notificationsViewModel: NotificationsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val currentIndex by viewModel.currentIndex.collectAsState()
     val matchResult by viewModel.matchResult.collectAsState()
+    val unreadNotificationsCount by notificationsViewModel.unreadCount.collectAsState()
 
     val context = androidx.compose.ui.platform.LocalContext.current
     LaunchedEffect(matchResult) {
@@ -104,6 +108,27 @@ fun DiscoverScreen(
                         color = TextSecondary,
                         lineHeight = 11.sp
                     )
+                    BadgedBox(
+                        badge = {
+                            if (unreadNotificationsCount > 0) {
+                                Badge(
+                                    containerColor = AccentPink,
+                                    contentColor = Color.White
+                                ) {
+                                    Text(text = "$unreadNotificationsCount")
+                                }
+                            }
+                        },
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    ) {
+                        IconButton(onClick = onNavigateToNotifications) {
+                            Icon(
+                                Icons.Outlined.Notifications,
+                                contentDescription = "Notifications",
+                                tint = TextSecondary
+                            )
+                        }
+                    }
                     IconButton(onClick = onOpenFilters) {
                         Icon(
                             Icons.Outlined.FilterList,

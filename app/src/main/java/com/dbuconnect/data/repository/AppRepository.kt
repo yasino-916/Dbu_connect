@@ -230,14 +230,31 @@ class AppRepository @Inject constructor(
     }
 
     suspend fun refreshNotifications() {
-        // Notifications are locally managed; no remote fetch needed
+        val result = api.getNotifications()
+        result.onSuccess { notifications ->
+            notificationDao.deleteAll()
+            notificationDao.insertNotifications(notifications)
+        }
     }
 
     suspend fun markNotificationAsRead(id: String) {
         notificationDao.markAsRead(id)
+        api.markNotificationAsReadRemote(id)
     }
 
     suspend fun markAllNotificationsAsRead() {
+        val userId = dataStore.userId.first() ?: return
         notificationDao.markAllAsRead()
+        api.markAllNotificationsAsReadRemote(userId)
+    }
+
+    suspend fun markMessagesAsRead(chatId: String): Result<Unit> {
+        val currentUserId = dataStore.userId.first() ?: return Result.failure(Exception("No current user"))
+        // Clear locally first for instant UI response
+        matchDao.clearUnreadCount(chatId)
+        messageDao.markMessagesAsRead(chatId, currentUserId)
+        
+        // Sync with remote server asynchronously
+        return api.markMessagesAsRead(chatId, currentUserId)
     }
 }

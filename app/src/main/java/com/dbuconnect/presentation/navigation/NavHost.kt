@@ -33,6 +33,8 @@ import com.dbuconnect.presentation.screens.onboarding.OnboardingScreen
 import com.dbuconnect.presentation.screens.profile.ProfileScreen
 import com.dbuconnect.presentation.screens.profile.SettingsScreen
 import com.dbuconnect.presentation.screens.setup.ProfileSetupScreen
+import com.dbuconnect.presentation.screens.notifications.NotificationsScreen
+import com.dbuconnect.data.models.NotificationType
 import com.dbuconnect.presentation.theme.*
 import com.dbuconnect.presentation.viewmodels.DiscoverViewModel
 import com.dbuconnect.presentation.viewmodels.StartupViewModel
@@ -210,7 +212,8 @@ fun DBUConnectNavHost(
                     onOpenFilters = { navController.navigate(Screen.Filters.route) },
                     onMatchFound = { matchId ->
                         navController.navigate(Screen.MatchSuccess.createRoute(matchId))
-                    }
+                    },
+                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
                 )
             }
 
@@ -241,7 +244,22 @@ fun DBUConnectNavHost(
                             launchSingleTop = true
                             restoreState = true
                         }
-                    }
+                    },
+                    onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) }
+                )
+            }
+
+            // Notifications
+            composable(Screen.Notifications.route) {
+                NotificationsScreen(
+                    onNotificationClick = { notification ->
+                        if (notification.type == NotificationType.MUTUAL_LIKE || notification.type == NotificationType.NEW_MESSAGE) {
+                            notification.relatedId?.let { matchId ->
+                                navController.navigate(Screen.Chat.createRoute(matchId))
+                            }
+                        }
+                    },
+                    onBack = { navController.popBackStack() }
                 )
             }
 

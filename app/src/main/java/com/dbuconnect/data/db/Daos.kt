@@ -66,6 +66,9 @@ interface MatchDao {
     @Query("UPDATE matches SET lastMessage = :text, lastMessageTime = :timestamp WHERE id = :matchId")
     suspend fun updateLastMessage(matchId: String, text: String, timestamp: Long)
 
+    @Query("UPDATE matches SET unreadCount = 0 WHERE id = :matchId")
+    suspend fun clearUnreadCount(matchId: String)
+
     @Query("DELETE FROM matches")
     suspend fun deleteAll()
 }
@@ -83,6 +86,9 @@ interface MessageDao {
 
     @Update
     suspend fun updateMessage(message: Message)
+
+    @Query("UPDATE messages SET status = 'READ' WHERE chatId = :chatId AND senderId <> :currentUserId")
+    suspend fun markMessagesAsRead(chatId: String, currentUserId: String)
 
     @Query("DELETE FROM messages WHERE chatId = :chatId")
     suspend fun deleteMessagesForChat(chatId: String)

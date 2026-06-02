@@ -7,6 +7,8 @@ import com.dbuconnect.data.models.MessageStatus
 import com.dbuconnect.data.models.ProfileCard
 import com.dbuconnect.data.models.RsvpStatus
 import com.dbuconnect.data.models.User
+import com.dbuconnect.data.models.Notification
+import com.dbuconnect.data.models.NotificationType
 import com.google.gson.annotations.SerializedName
 
 data class EmailPasswordRequest(
@@ -255,4 +257,46 @@ fun getValidPhotoUrl(url: String?, id: String, name: String): String {
         return getFallbackPhotoUrl(id, name)
     }
     return url
+}
+
+data class NotificationDto(
+    val id: String,
+    val type: String,
+    val title: String,
+    val message: String,
+    @SerializedName("from_user_id") val fromUserId: String?,
+    @SerializedName("from_user_name") val fromUserName: String,
+    @SerializedName("from_user_photo") val fromUserPhoto: String,
+    @SerializedName("related_id") val relatedId: String?,
+    @SerializedName("is_read") val isRead: Boolean,
+    @SerializedName("created_at") val createdAt: String
+) {
+    fun toNotification(): Notification {
+        val notificationType = try {
+            com.dbuconnect.data.models.NotificationType.valueOf(type)
+        } catch (e: Exception) {
+            com.dbuconnect.data.models.NotificationType.MUTUAL_LIKE
+        }
+
+        val parsedTimestamp = try {
+            val format = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.US)
+            format.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            format.parse(createdAt.substringBefore("."))?.time ?: System.currentTimeMillis()
+        } catch (e: Exception) {
+            System.currentTimeMillis()
+        }
+
+        return Notification(
+            id = id,
+            type = notificationType,
+            title = title,
+            message = message,
+            fromUserId = fromUserId.orEmpty(),
+            fromUserName = fromUserName,
+            fromUserPhoto = getValidPhotoUrl(fromUserPhoto, id, fromUserName),
+            relatedId = relatedId.orEmpty(),
+            timestamp = parsedTimestamp,
+            isRead = isRead
+        )
+    }
 }

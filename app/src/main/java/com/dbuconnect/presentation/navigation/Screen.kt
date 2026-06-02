@@ -26,6 +26,7 @@ sealed class Screen(val route: String) {
     data object Profile : Screen("profile")
     data object EditProfile : Screen("edit_profile")
     data object Settings : Screen("settings")
+    data object Notifications : Screen("notifications")
     data object MatchSuccess : Screen("match_success/{matchId}") {
         fun createRoute(matchId: String) = "match_success/$matchId"
     }
