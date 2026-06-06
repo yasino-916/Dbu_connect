@@ -111,6 +111,15 @@ DBU Connect follows a rigorous, customized design system tailored to the DBU col
 
 ---
 
+## 👥 Group Members
+
+* **Goitom Shumey** ————-DBU1501638
+* **Dawit Moges** ——————DBU1501114
+* **Yasin Teshome**————— DBU1501545
+* **Daniel Fekede** —————-DBU1501108
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
